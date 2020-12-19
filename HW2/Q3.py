@@ -4,12 +4,12 @@ import numpy as np
 import numpy.linalg as linalg
 from scipy.sparse import csr_matrix
 
-def torusGraph(n,N, NeiMinThresh = 8, noisy=False):
+def torusGraph(n,N, NeiMaxThresh = 8, noisy=False):
     """
     Creating Turos topology with at least number of define neighbours
     :param n: Number of main Ring nodes
     :param N: Number of secondry ring nodes
-    :param NeiMinThresh: Minimum neighbourhoods for each nodes
+    :param NeiMaxThresh: Maximum neighbourhoods for each nodes
     :param noisy: Whether or not create a noisy topology
     :return: Graph and nodes positions
     """
@@ -52,7 +52,7 @@ def torusGraph(n,N, NeiMinThresh = 8, noisy=False):
     ### --- Optional to get Rnadom Turos Graph with define distance for edge connections --- ###
     i = c * 0.5 #Set the neighbours radius with direct connection to major Torus radius
     ValidEdgesCheckPoint = 1e10
-    while ValidEdgesCheckPoint > NeiMinThresh:
+    while ValidEdgesCheckPoint > NeiMaxThresh:
         i -= 0.1
         G = nx.random_geometric_graph(n*N, i, pos=pos)
         ValidEdgesCheckPoint = np.min(np.sum(nx.adjacency_matrix(G).toarray(), axis=1))
@@ -90,13 +90,13 @@ def SectionOne():
 
     Pn_eigenValues, Pn_eigenVectors = linalg.eig(Pn_lpcn.toarray())
     idx = (-Pn_eigenValues).argsort()[::-1] #Since argsort is order from largest to smallest I multiply by -1 to order in decreasing order and not decent order
-    Pn_eigenValues = Pn_eigenValues[idx]
-    Pn_eigenVectors = Pn_eigenVectors[:, idx]
+    Pn_eigenValues = np.around(np.real(Pn_eigenValues[idx]),3) #Take the real part and round to avoide computational error
+    Pn_eigenVectors = np.around(np.real(Pn_eigenVectors[:, idx]),3) #Take the real part and round to avoide computational error when coloring
 
     Rn_eigenValues, Rn_eigenVectors = linalg.eig(Rn_lpcn.toarray())
     idx = (-Rn_eigenValues).argsort()[::-1] #Since argsort is order from largest to smallest I multiply by -1 to order in decreasing order and not decent order
-    Rn_eigenValues = Rn_eigenValues[idx]
-    Rn_eigenVectors = Rn_eigenVectors[:, idx]
+    Rn_eigenValues = np.around(np.real(Rn_eigenValues[idx]),3) #Take the real part and round to avoide computational error
+    Rn_eigenVectors = np.around(np.real(Rn_eigenVectors[:, idx]),3) #Take the real part and round to avoide computational error when coloring
 
     plt.figure()
     ax = plt.gca()
@@ -201,8 +201,8 @@ def SectionThree():
 
     GN_eigenValues, GN_eigenVectors = linalg.eig(GN_lpcn.toarray())
     idx = (-GN_eigenValues).argsort()[::-1]  # Since argsort is order from largest to smallest I multiply by -1 to order in decreasing order and not decent order
-    GN_eigenValues = GN_eigenValues[idx]
-    GN_eigenVectors = GN_eigenVectors[:, idx]
+    GN_eigenValues = np.real(GN_eigenValues[idx])
+    GN_eigenVectors = np.real(GN_eigenVectors[:, idx])
 
     x = np.array(list(pos.values()), dtype=float)[:,0]
     y = np.array(list(pos.values()), dtype=float)[:,1]
@@ -237,7 +237,7 @@ def ThreeDPlot(x,y,z,NumPlots=1,eigenvectors=None,PresentedEig=None, Noisy=False
     color = np.ones((x.shape[0],2)) #Set ones as deafult colors
     TitleEig = np.array([1]) #Set deafult title
     if eigenvectors is not None:
-        color = eigenvectors[:, PresentedEig]
+        color = np.around(eigenvectors[:, PresentedEig],3)
         TitleEig = PresentedEig
 
     Graphtype = 'G'

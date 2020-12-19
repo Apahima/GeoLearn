@@ -2,10 +2,15 @@ import matplotlib.pyplot as plt
 from HW2 import Q3, Q5
 
 if __name__ == '__main__':
-    # #Question 3
-    # Q3.SectionOne()
-    # Q3.SectionTwo()
-    # Q3.SectionThree()
-    Q5.ISOMAPEmbbeding()
-    Q5.LLEEmbedding()
+    ## --- Question 3 --- ##
+    Q3.SectionOne()
+    Q3.SectionTwo()
+    Q3.SectionThree()
+
+    ## --- Question 5 --- ##
+    Q5.ISOMAPEmbbeding(nei=[20,50,500], DataSet={'Turos'})
+    Q5.LLEEmbedding(nei=[20,50,500], DataSet={'Turos'})
+    Q5.ISOMAPEmbbeding(nei=[5,20,50], DataSet={'Digits'})
+    Q5.LLEEmbedding(nei=[5,20,50], DataSet={'Digits'})
     plt.show()
+    print('Finish')
