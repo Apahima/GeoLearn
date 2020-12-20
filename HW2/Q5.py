@@ -6,6 +6,8 @@ from sklearn.neighbors import NearestNeighbors, kneighbors_graph
 from sklearn.utils.graph_shortest_path import graph_shortest_path
 from sklearn.decomposition import KernelPCA
 from sklearn.datasets import make_swiss_roll
+from sklearn.svm import SVC
+from sklearn.model_selection import cross_val_score
 
 
 def AffiinityMAt(Z,epsilon=1,kernel_method='Gaussian', n_neighbor=None, Normalization=None):
@@ -75,7 +77,7 @@ def LLE(data, n_components=2, n_neighbors=10):
     :param data: input image matrix of shape (n,m)
     :param n_components: number of components for projection
     :param n_neighbors: number of neighbors for the weight extraction
-    :return: Projected output of shape (n_components, n)
+    :return: Projected output of shape (n_components, n) exluding the first element since it's a bias
     """
     # Compute the nearest neighbors
     _, neighbors_idx  = AffiinityMAt(data,n_neighbor=n_neighbors,kernel_method='Linear')
@@ -176,6 +178,13 @@ def making_plot(data,pallete = None, neighbors: str = None, method: str = None):
 
 
 def CreateDS_Torus_Digits(TurosR=10,Torusr=4,Classes=[3,5,7]):
+    """
+    Create Torus and Digits Dataset
+    :param TurosR: Major Radius
+    :param Torusr: Minor radius
+    :param Classes: Number of classes from dataset
+    :return: Datasets
+    """
     S = torus(R = 10,r = 4)
     Classes = [3,5,7]
     dig = digitis(Classes)
@@ -183,6 +192,15 @@ def CreateDS_Torus_Digits(TurosR=10,Torusr=4,Classes=[3,5,7]):
     return S, dig
 
 def ISOMAPEmbbeding(TurosR=10,Torusr=4,Classes=[3,5,7],nei=[5,10,20], DataSet = {'Turos', 'Digits'}):
+    """
+    Embbeding ISOMAP for Turos and Digits datasets
+    :param TurosR: Major Radius
+    :param Torusr: Minor radius
+    :param Classes: Number of classes from dataset
+    :param nei: Number of neighbours for calculating the embbeding space
+    :param DataSet: Which Dataset to plot
+    :return: Plotting the relevant dataset
+    """
 
     S, dig = CreateDS_Torus_Digits(TurosR=TurosR,Torusr=Torusr,Classes=[3,5,7])
     ### ------ Isomap ------###
@@ -222,6 +240,15 @@ def ISOMAPEmbbeding(TurosR=10,Torusr=4,Classes=[3,5,7],nei=[5,10,20], DataSet = 
             plt.savefig('Digits up to {} -  ISOMAP embbeding for {} neighbour'.format(Classes[Argclass], nei))
 
 def LLEEmbedding(TurosR=10,Torusr=4,Classes=[3,5,7],nei=[5,10,20], DataSet = {'Turos', 'Digits'}):
+    """
+    Embbeding LLE for Turos and Digits datasets
+    :param TurosR: Major Radius
+    :param Torusr: Minor radius
+    :param Classes: Number of classes from dataset
+    :param nei: Number of neighbours for calculating the embbeding space
+    :param DataSet: Which Dataset to plot
+    :return: Plotting the relevant dataset
+    """
 
     S, dig = CreateDS_Torus_Digits(TurosR=TurosR,Torusr=Torusr,Classes=[3,5,7])
     ### ------ LLE ------###
@@ -260,85 +287,181 @@ def LLEEmbedding(TurosR=10,Torusr=4,Classes=[3,5,7],nei=[5,10,20], DataSet = {'T
                 # making_plot(Digit_isomap, Specificcalss[1], neighbors=j, method='Digit ISOMAP') #An option to plot single graphs
             plt.savefig('Digits up to {} - LLE embbeding for {} neighbour'.format(Classes[Argclass], nei))
 
-def SwissRollWithConstrain():
-    n_samples = 2000
+def SwissRollWithConstrain(nei = [5,25,50]):
+    """
+    Implement Swiss roll with Random noise and implement ISOMMAPING and LLE
+    :param nei: Number of neighbours to calculate the manifold learning embbeding
+    :return: Ploting the graph in the embbeding space
+    """
+    n_samples = 4000
+    n_neighbor = 60
     noise = 0
-    X, _ = make_swiss_roll(n_samples, noise=noise)
+    X, _ = make_swiss_roll(n_samples, noise=noise, random_state=42)
+    X = X*2 #scaling ths Swiss
+
+    neigh = NearestNeighbors(n_neighbors=n_neighbor).fit(X)
+    _, indxes = neigh.kneighbors(X)
+
+    SwissConstrain = np.delete(X,indxes[1500,:], axis=0)
+    SwissConstrainNoisy = SwissConstrain + np.random.normal(0,1,[n_samples-n_neighbor,3])
+
+    elevation = 10
+    azimoth = 60
+    fig = plt.figure(figsize=(21,7))
+    ax1 = fig.add_subplot(131, projection='3d')
+    ax1.set_zlim(-30, 30)
+    ax1.scatter(X[:, 0], X[:, 1], X[:, 2], c=np.linalg.norm((X[:, 0], X[:, 1]), axis=0))
+    ax1.set_title('Swiss Roll')
+    ax1.view_init(elev=elevation, azim=azimoth)
+    ax1 = fig.add_subplot(132, projection='3d')
+    ax1.set_zlim(-30, 30)
+    ax1.scatter(SwissConstrain[:, 0], SwissConstrain[:, 1], SwissConstrain[:, 2],
+                c=np.linalg.norm((SwissConstrain[:, 0], SwissConstrain[:, 1]), axis=0))
+    ax1.set_title('Swiss Roll with constrain')
+    ax1.view_init(elev=elevation, azim=azimoth)
+    ax1 = fig.add_subplot(133, projection='3d')
+    ax1.set_zlim(-30, 30)
+    ax1.scatter(SwissConstrainNoisy[:, 0], SwissConstrainNoisy[:, 1], SwissConstrainNoisy[:, 2],
+                c=np.linalg.norm((SwissConstrainNoisy[:, 0], SwissConstrainNoisy[:, 1]), axis=0))
+    ax1.set_title('Noisy Swiss Roll with constrain')
+    ax1.view_init(elev=elevation, azim=azimoth)
+    plt.savefig('Swiss Roll with different petubations')
+
+    DataToPlot = [X,SwissConstrain,SwissConstrainNoisy]
+    DataName = ['Swiss ISOMAP','Swiss with constrain ISOMAP', 'Swiss with constrain and noise ISOMAP']
+
+    # Ploting Swiss Isomapping
+    for neighbors in nei:
+        fig = plt.figure(figsize=(30, 10))
+        for i, j in enumerate(DataToPlot):
+            Swiss_isomap = Isomap(j, 2, neighbors)
+            method = DataName[i]
+            ax = fig.add_subplot(1, len(DataToPlot), i + 1)
+            ax.scatter(Swiss_isomap[:, 0], Swiss_isomap[:, 1],
+                       c=np.linalg.norm((Swiss_isomap[:, 0], Swiss_isomap[:, 1]), axis=0), cmap=plt.cm.Spectral)
+            ax.set_title('{} with {} Neighbours'.format(method, neighbors))
+            # making_plot(Swiss_isomap, pallete=Swiss_isomap[:, 0:1], neighbors=neighbors, method=method) #An option to plot single graphs
+        plt.savefig('Swiss ISOMAP embbeding for {} neighbour'.format(neighbors))
+
+    DataName = ['Swiss LLE', 'Swiss with constrain LLE', 'Swiss with constrain and noise LLE']
+    # Ploting Swiss LLE
+    for neighbors in nei:
+        fig = plt.figure(figsize=(30, 10))
+        for i, j in enumerate(DataToPlot):
+            Swiss_LLE = LLE(j, 2, neighbors)
+            method = DataName[i]
+            ax = fig.add_subplot(1, len(DataToPlot), i + 1)
+            ax.scatter(Swiss_LLE[:, 0], Swiss_LLE[:, 1],
+                       c=np.linalg.norm((Swiss_LLE[:, 0], Swiss_LLE[:, 1]), axis=0), cmap=plt.cm.Spectral)
+            ax.set_title('{} with {} Neighbours'.format(method, neighbors))
+            # making_plot(Swiss_LLE, pallete=Swiss_LLE[:, 0:1], neighbors=neighbors, method=method) #An option to plot single graphs
+        plt.savefig('Swiss LLE embbeding for {} neighbour'.format(neighbors))
+    return
+
+def ClassificationAccuracy(Class=[7], folds = 20, neighbours = 25):
+    """
+    Classified the embbeding space and printing the accuracy
+    :param Classes: Which digit class to extract
+    :param folds: How many folds to make for classification in order to get high confidence
+    :param neighbours: Number of neighbours to take into cosideration for manifold learning embbeding
+    :return: printing the mean accuracy for each embbeding method
+    """
+    S, dig = CreateDS_Torus_Digits(Class)
+    i = 0
+
+    Digit_isomap_embed = Isomap(dig[i][0], 2, neighbours)
+    Digit_LLE_embed = LLE(dig[i][0], 2, neighbours)
+    clf = SVC()
+    Accuracies_ISOMAP = cross_val_score(clf,Digit_isomap_embed,dig[i][1], cv=folds)
+    Accuracies_LLE = cross_val_score(clf,Digit_LLE_embed,dig[i][1], cv=folds)
+
+    print('The mean accuracy is:')
+    print('ISOMAPPING {:.3f}'.format(np.mean(Accuracies_ISOMAP)))
+    print('LLE {:.3f}'.format(np.mean(Accuracies_LLE)))
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
+    ClassificationAccuracy()
     ISOMAPEmbbeding()
     LLEEmbedding()
+    SwissRollWithConstrain()
     ### ------ Loading \ Creating data ------###
-    S = torus(R = 10,r = 4)
-    Classes = [3,5,7]
-    dig = digitis(Classes)
-
-    ### ------ Isomap ------###
-    nei = [5,10,20]
-    #Ploting Torus Isomapping
-    fig = plt.figure(figsize=(30,10))
-    for i,j in enumerate(nei):
-        Torus_isomap = Isomap(S,2,j)
-        neighbors = j
-        method = 'Torus ISOMAP'
-        ax = fig.add_subplot(1,len(nei),i+1)
-        scatter = ax.scatter(Torus_isomap[:, 0], Torus_isomap[:, 1], c=S[:,0:1], cmap=plt.cm.Spectral)
-        # legend = ax.legend(*scatter.legend_elements(), loc="lower left", title="Classes")
-        # ax.add_artist(legend)
-        # ax.legend()
-        ax.set_title('{} with {} Neighbours'.format(method, neighbors))
-        # making_plot(Torus_isomap, pallete=S[:, 0:1], neighbors=j, method='Torus ISOMAP') #An option to plot single graphs
-    plt.savefig('Torus ISOMAP embbeding for {} neighbour'.format(nei))
-
-    #Plotting Digits Isomapping
-    for Argclass, Specificcalss in enumerate(dig):
-        fig = plt.figure(figsize=(30,10))
-        for i,j in enumerate(nei):
-            neighbors = j
-            Digit_isomap = Isomap(Specificcalss[0],2,j)
-            method = 'Digit ISOMAP'
-            ax = fig.add_subplot(1, len(nei), i + 1)
-            scatter = ax.scatter(Digit_isomap[:, 0], Digit_isomap[:, 1], c=Specificcalss[1], cmap=plt.cm.Spectral)
-            legend = ax.legend(*scatter.legend_elements(), loc="lower left", title="Classes")
-            ax.add_artist(legend)
-            ax.legend()
-            ax.set_title('{} with {} Neighbours'.format(method, neighbors))
-            # making_plot(Digit_isomap, Specificcalss[1], neighbors=j, method='Digit ISOMAP') #An option to plot single graphs
-        plt.savefig('Digits up to {} -  ISOMAP embbeding for {} neighbour'.format(Classes[Argclass], nei))
-
-
-    ### ------ LLE ------###
-    nei = [5,10,20]
-    # Plotting Torus
-    fig = plt.figure(figsize=(30, 10))
-    for i,j in enumerate(nei):
-        Torus_LLE = LLE(S,2,j)
-        neighbors = j
-        method = 'Torus LLE'
-        ax = fig.add_subplot(1, len(nei), i + 1)
-        scatter = ax.scatter(Torus_LLE[:, 0], Torus_LLE[:, 1], c=S[:, 0:1], cmap=plt.cm.Spectral)
-        # legend = ax.legend(*scatter.legend_elements(), loc="lower left", title="Classes")
-        # ax.add_artist(legend)
-        # ax.legend()
-        ax.set_title('{} with {} Neighbours'.format(method, neighbors))
-        # making_plot(Torus_LLE, pallete=S[:, 0:1], neighbors=j, method='Torus LLE') #An option to plot single graphs
-    plt.savefig('Torus LLE embbeding for {} neighbour'.format(neighbors))
-
-    #Plotting Digits
-    for Argclass, Specificcalss in enumerate(dig):
-        fig = plt.figure(figsize=(30,10))
-        for i,j in enumerate(nei):
-            neighbors = j
-            Digit_LLE = LLE(Specificcalss[0],2,j)
-            method = 'Digit LLE'
-            ax = fig.add_subplot(1, len(nei), i + 1)
-            scatter = ax.scatter(Digit_LLE[:, 0], Digit_LLE[:, 1], c=Specificcalss[1], cmap=plt.cm.Spectral)
-            legend = ax.legend(*scatter.legend_elements(), loc="lower left", title="Classes")
-            ax.add_artist(legend)
-            ax.legend()
-            ax.set_title('{} with {} Neighbours'.format(method, neighbors))
-            # making_plot(Digit_isomap, Specificcalss[1], neighbors=j, method='Digit ISOMAP') #An option to plot single graphs
-        plt.savefig('Digits up to {} - LLE embbeding for {} neighbour'.format(Classes[Argclass], nei))
+    # S = torus(R = 10,r = 4)
+    # Classes = [3,5,7]
+    # dig = digitis(Classes)
+    #
+    # ### ------ Isomap ------###
+    # nei = [5,10,20]
+    # #Ploting Torus Isomapping
+    # fig = plt.figure(figsize=(30,10))
+    # for i,j in enumerate(nei):
+    #     Torus_isomap = Isomap(S,2,j)
+    #     neighbors = j
+    #     method = 'Torus ISOMAP'
+    #     ax = fig.add_subplot(1,len(nei),i+1)
+    #     scatter = ax.scatter(Torus_isomap[:, 0], Torus_isomap[:, 1], c=S[:,0:1], cmap=plt.cm.Spectral)
+    #     # legend = ax.legend(*scatter.legend_elements(), loc="lower left", title="Classes")
+    #     # ax.add_artist(legend)
+    #     # ax.legend()
+    #     ax.set_title('{} with {} Neighbours'.format(method, neighbors))
+    #     # making_plot(Torus_isomap, pallete=S[:, 0:1], neighbors=j, method='Torus ISOMAP') #An option to plot single graphs
+    # plt.savefig('Torus ISOMAP embbeding for {} neighbour'.format(nei))
+    #
+    # #Plotting Digits Isomapping
+    # for Argclass, Specificcalss in enumerate(dig):
+    #     fig = plt.figure(figsize=(30,10))
+    #     for i,j in enumerate(nei):
+    #         neighbors = j
+    #         Digit_isomap = Isomap(Specificcalss[0],2,j)
+    #         method = 'Digit ISOMAP'
+    #         ax = fig.add_subplot(1, len(nei), i + 1)
+    #         scatter = ax.scatter(Digit_isomap[:, 0], Digit_isomap[:, 1], c=Specificcalss[1], cmap=plt.cm.Spectral)
+    #         legend = ax.legend(*scatter.legend_elements(), loc="lower left", title="Classes")
+    #         ax.add_artist(legend)
+    #         ax.legend()
+    #         ax.set_title('{} with {} Neighbours'.format(method, neighbors))
+    #         # making_plot(Digit_isomap, Specificcalss[1], neighbors=j, method='Digit ISOMAP') #An option to plot single graphs
+    #     plt.savefig('Digits up to {} -  ISOMAP embbeding for {} neighbour'.format(Classes[Argclass], nei))
+    #
+    #
+    # ### ------ LLE ------###
+    # nei = [5,10,20]
+    # # Plotting Torus
+    # fig = plt.figure(figsize=(30, 10))
+    # for i,j in enumerate(nei):
+    #     Torus_LLE = LLE(S,2,j)
+    #     neighbors = j
+    #     method = 'Torus LLE'
+    #     ax = fig.add_subplot(1, len(nei), i + 1)
+    #     scatter = ax.scatter(Torus_LLE[:, 0], Torus_LLE[:, 1], c=S[:, 0:1], cmap=plt.cm.Spectral)
+    #     # legend = ax.legend(*scatter.legend_elements(), loc="lower left", title="Classes")
+    #     # ax.add_artist(legend)
+    #     # ax.legend()
+    #     ax.set_title('{} with {} Neighbours'.format(method, neighbors))
+    #     # making_plot(Torus_LLE, pallete=S[:, 0:1], neighbors=j, method='Torus LLE') #An option to plot single graphs
+    # plt.savefig('Torus LLE embbeding for {} neighbour'.format(neighbors))
+    #
+    # #Plotting Digits
+    # for Argclass, Specificcalss in enumerate(dig):
+    #     fig = plt.figure(figsize=(30,10))
+    #     for i,j in enumerate(nei):
+    #         neighbors = j
+    #         Digit_LLE = LLE(Specificcalss[0],2,j)
+    #         method = 'Digit LLE'
+    #         ax = fig.add_subplot(1, len(nei), i + 1)
+    #         scatter = ax.scatter(Digit_LLE[:, 0], Digit_LLE[:, 1], c=Specificcalss[1], cmap=plt.cm.Spectral)
+    #         legend = ax.legend(*scatter.legend_elements(), loc="lower left", title="Classes")
+    #         ax.add_artist(legend)
+    #         ax.legend()
+    #         ax.set_title('{} with {} Neighbours'.format(method, neighbors))
+    #         # making_plot(Digit_isomap, Specificcalss[1], neighbors=j, method='Digit ISOMAP') #An option to plot single graphs
+    #     plt.savefig('Digits up to {} - LLE embbeding for {} neighbour'.format(Classes[Argclass], nei))
 
 
     ### --- Validation with build-in Sikit-learn package --- ###
