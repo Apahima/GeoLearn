@@ -28,11 +28,15 @@ def torusGraph(n,N, NeiMaxThresh = 8, noisy=False):
     y = (c + a * np.cos(theta)) * np.sin(phi)
     z = a * np.sin(theta)
 
-    pos = {i: (np.ravel(x)[i],np.ravel(y)[i],np.ravel(z)[i]) for i in range(n*N)} #Key Dict Positions
+    node_index = np.array((np.ravel(x),np.ravel(y),np.ravel(z))).T
+
+    pos = {i: (tuple(node_index[i])) for i in range(n*N)} #Key Dict Positions
 
     if noisy is not False:
+        permute_indices = np.random.permutation(node_index) #permute indices
         noise = np.random.normal(0,0.01, size=(np.ravel(x).shape[0],3))
-        pos = {i: ((np.ravel(x)[i],np.ravel(y)[i],np.ravel(z)[i])+noise[i]) for i in range(n*N)}
+        node_index = permute_indices + noise #Adding noise 
+        pos = {i: (tuple(node_index[i])) for i in range(n*N)}
 
     fig = plt.figure()
     ax1 = fig.add_subplot(121, projection='3d')
