@@ -199,9 +199,9 @@ def section4(path, n_dim = 2, embedding='MDS'):
     faces = ply.cells_dict['triangle']
 
     # # # Compute the geodesics on the surface
-    # geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
+    geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
     # Saving numpy array
-    # np.save('treg_001', geodesics_dist.toarray())
+    np.save('treg_001', geodesics_dist.toarray())
     #loading numpy matrix
     geodesics_dist = np.load(r'treg_001.npy')
 
@@ -210,18 +210,18 @@ def section4(path, n_dim = 2, embedding='MDS'):
 
     if embedding == 'MDS':
         isometric_embedding_mds = mds(geodesics_dist,n_dim)
-        # embbeded_n_dim_geodesic_distance = gdist.local_gdist_matrix(isometric_embedding_mds.astype(np.float64),faces.astype(np.int32))
-        # # Saving numpy array
-        # np.save('MDS_embbeded_n_dim_treg_001', embbeded_n_dim_geodesic_distance.toarray())
+        embbeded_n_dim_geodesic_distance = gdist.local_gdist_matrix(isometric_embedding_mds.astype(np.float64),faces.astype(np.int32))
+        # Saving numpy array
+        np.save('MDS_embbeded_n_dim_treg_001', embbeded_n_dim_geodesic_distance.toarray())
         # loading numpy array matrix
         embbeded_n_dim_geodesic_distance = np.load(r'MDS_embbeded_n_dim_treg_001.npy')
 
     elif embedding == 'Spherical MDS':
         isometric_embedding_mds = spherical_mds(geodesics_dist, n_dim)
-        # embbeded_n_dim_geodesic_distance = gdist.local_gdist_matrix(isometric_embedding_mds.astype(np.float64),faces.astype(np.int32))
-        # # Saving numpy array
-        # np.save('SMDS_embbeded_n_dim_treg_001', embbeded_n_dim_geodesic_distance.toarray())
-        # # loading numpy array matrix
+        embbeded_n_dim_geodesic_distance = gdist.local_gdist_matrix(isometric_embedding_mds.astype(np.float64),faces.astype(np.int32))
+        # Saving numpy array
+        np.save('SMDS_embbeded_n_dim_treg_001', embbeded_n_dim_geodesic_distance.toarray())
+        # loading numpy array matrix
         embbeded_n_dim_geodesic_distance = np.load(r'SMDS_embbeded_n_dim_treg_001.npy')
 
     msm_embed = Mesh(v=isometric_embedding_mds, f=faces).render_pointcloud(embbeded_n_dim_geodesic_distance[:, 250],
@@ -242,9 +242,9 @@ def section5(path, compress_to, init_v):
     n_points, _ = ply.points.shape
 
     # # # Compute the geodesics on the surface
-    # geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
+    geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
     # Saving numpy array
-    # np.save('treg_001', geodesics_dist.toarray())
+    np.save('treg_001', geodesics_dist.toarray())
     #loading numpy matrix
     geodesics_dist = np.load(r'treg_000.npy')
 
