@@ -9,7 +9,6 @@ from PIL import Image
 import meshio
 import gdist
 import scipy
-from HW3.MeshImport import Mesh
 import pyvista as pv
 
 
@@ -63,26 +62,25 @@ def Graph_adj(data):
     :return: the adjacency matrix as nx (networkxx) Graph
     """
     graph = nx.Graph()
-    rows, cols = data.shape
+    rows, colums = data.shape
     N = np.prod(data.shape)
 
     data_as_vec = data.flatten()
     neighbours = np.asarray([(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)], dtype=np.int)
 
+
     for i in range(N):
         if data_as_vec[i] == 1:
-            loc = np.asarray([i // cols, i % cols]) + neighbours
-            # loc = im2col(cols, i) + neighbours
-            loc = np.clip(loc , (0,0), (rows - 1,cols - 1))
-            for row, col in loc:
-                if data[row, col] == 1:
-                    j = int(row * cols + col)
-                    # j = col2im(cols, row, col)
+            position = np.asarray([i // colums, i % colums]) + neighbours
+            position = np.clip(position , (0,0), (rows - 1,colums - 1))
+            for q, w in position:
+                if data[q, w] == 1:
+                    j = int(q * colums + w)
                     graph.add_edge(i, j)
 
     return graph
 
-def mds(data,n_dim):
+def MDS(data, n_dim):
     """
     Multidimentional scaling - reducing the dimentionality to n_dim
     :param data: data which we would like to reduce the dimentionality
@@ -90,10 +88,9 @@ def mds(data,n_dim):
     :return: Reduce dimention with MDS algo.
     """
 
-    row, n_feature = data.shape
-
-    H = np.identity(row) - (1 / row) * np.ones_like(data)
-    K = -0.5 * H * (data**2) * H
+    i, n_feature = data.shape
+    H = np.identity(i) - (1 / i) * np.ones_like(data)
+    K = -0.5 * (H @ (data**2) @ H)
 
     return spectral_decomp(K, n_dim)
 
@@ -117,8 +114,8 @@ def spectral_decomp(data,n_dim):
     :return: low dimensionality data with SVD decomposition
     """
 
-    G_eigenValues, G_eigenVectors = np.linalg.eig(data)
-    idx = (G_eigenValues).argsort()  # Since argsort is order from largest to smallest I multiply by -1 to order in decreasing order and not decent order
+    G_eigenValues, G_eigenVectors = np.linalg.eigh(data)
+    idx = (G_eigenValues).argsort()
     G_eigenValues.sort()   # = np.real(G_eigenValues[idx])
     G_eigenVectors = G_eigenVectors[:, idx]
 
@@ -146,7 +143,7 @@ def FarestPointSampling(geodesics_dist, n_dim_compress, init_v):
 
     return vertic_set
 
-def section1(path, source, target):
+def Sec1(path, source, target):
     im_maze = np.asarray(Image.open(path).convert('1'), dtype=np.int) #Load the binary image
     rows, cols = im_maze.shape
 
@@ -175,7 +172,7 @@ def section1(path, source, target):
     shortest_path_dijkstra = [t[::-1] for t in shortest_path_dijkstra] #Flip the touple to be X,Y oder coordinates
     plotting_shortest_path(im_graph, shortest_path_dijkstra, 'Shoertest path using Graph Dijkstra method')
 
-def section2(path, source_pool, target_pool):
+def Sec2(path, source_pool, target_pool):
 
     mat_fname = pjoin(path, 'pool.mat')
     mat_contents = sio.loadmat(mat_fname)
@@ -188,7 +185,7 @@ def section2(path, source_pool, target_pool):
     path_pool = shortest_path(pool_fm,source_pool,target_pool)
     plotting_shortest_path(pool, path_pool, 'OPL Shortest path')
 
-def section4(path, n_dim = 2, embedding='MDS'):
+def Sec4(path, n_dim = 2, embedding='MDS'):
 
     file_path = path.split('.')[0]
     mesh_str = file_path.split('tr_')[1]
@@ -198,31 +195,31 @@ def section4(path, n_dim = 2, embedding='MDS'):
     vertices = ply.points
     faces = ply.cells_dict['triangle']
 
-    # # # Compute the geodesics on the surface
+    # # # Compute the geodesic distance by build-in package
     geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
     # Saving numpy array
-    np.save('treg_001', geodesics_dist.toarray())
+    np.save(mesh_str, geodesics_dist.toarray())
     #loading numpy matrix
-    geodesics_dist = np.load(r'treg_001.npy')
+    geodesics_dist = np.load(r'{}.npy'.format(mesh_str))
 
     #plot the mesh
     msm = Mesh(v=vertices, f=faces).render_pointcloud(geodesics_dist[:, 250], screenshot=mesh_str)
 
     if embedding == 'MDS':
-        isometric_embedding_mds = mds(geodesics_dist,n_dim)
+        isometric_embedding_mds = MDS(geodesics_dist, n_dim)
         embbeded_n_dim_geodesic_distance = gdist.local_gdist_matrix(isometric_embedding_mds.astype(np.float64),faces.astype(np.int32))
         # Saving numpy array
-        np.save('MDS_embbeded_n_dim_treg_001', embbeded_n_dim_geodesic_distance.toarray())
+        np.save('{}_n_dim_{}'.format(embedding,mesh_str), embbeded_n_dim_geodesic_distance.toarray())
         # loading numpy array matrix
-        embbeded_n_dim_geodesic_distance = np.load(r'MDS_embbeded_n_dim_treg_001.npy')
+        embbeded_n_dim_geodesic_distance = np.load(r'{}_n_dim_{}.npy'.format(embedding,mesh_str))
 
     elif embedding == 'Spherical MDS':
         isometric_embedding_mds = spherical_mds(geodesics_dist, n_dim)
         embbeded_n_dim_geodesic_distance = gdist.local_gdist_matrix(isometric_embedding_mds.astype(np.float64),faces.astype(np.int32))
         # Saving numpy array
-        np.save('SMDS_embbeded_n_dim_treg_001', embbeded_n_dim_geodesic_distance.toarray())
+        np.save('{}_n_dim_{}'.format(embedding,mesh_str), embbeded_n_dim_geodesic_distance.toarray())
         # loading numpy array matrix
-        embbeded_n_dim_geodesic_distance = np.load(r'SMDS_embbeded_n_dim_treg_001.npy')
+        embbeded_n_dim_geodesic_distance = np.load(r'{}_n_dim_{}.npy'.format(embedding,mesh_str))
 
     msm_embed = Mesh(v=isometric_embedding_mds, f=faces).render_pointcloud(embbeded_n_dim_geodesic_distance[:, 250],
                                                                            screenshot=mesh_str +'_'+ embedding)
@@ -230,23 +227,23 @@ def section4(path, n_dim = 2, embedding='MDS'):
     return np.linalg.norm((geodesics_dist - embbeded_n_dim_geodesic_distance), ord='fro')
 
 
-def section5(path, compress_to, init_v):
+def Sec5(path, compress_to, init_v):
     file_path = path.split('.')[0]
     mesh_str = file_path.split('tr_')[1]
 
     # Load mesh from .ply file
     ply = meshio.read(path)
     vertices = ply.points
-    faces = ply.cells_dict['triangle']
+
 
     n_points, _ = ply.points.shape
 
-    # # # Compute the geodesics on the surface
-    geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
-    # Saving numpy array
-    np.save('treg_001', geodesics_dist.toarray())
+    # # # Compute the geodesic distance by build-in package
+    # geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
+    # # Saving numpy array
+    # np.save(mesh_str, geodesics_dist.toarray())
     #loading numpy matrix
-    geodesics_dist = np.load(r'treg_000.npy')
+    geodesics_dist = np.load(r'{}.npy'.format(mesh_str))
 
     mesh_plot = pv.Plotter(shape=(1,4))
 
@@ -266,36 +263,54 @@ def section5(path, compress_to, init_v):
         mesh_plot.add_mesh(pointcloud, scalars=gdists_reduced)
         mesh_plot.add_text('Geo. colored {} vertices'.format(compress_to[i]))
 
-    mesh_plot.show(full_screen=True,screenshot='ReducedMesh by FarestPointSampling')
+    mesh_plot.show(full_screen=True,screenshot='{}_ReducedMesh by FarestPointSampling'.format(mesh_str))
     return
+
+
+class Mesh():
+    def __init__(self, v,f):
+
+        self.v = v
+        self.f = f
+
+    def render_pointcloud(self, func, colormap=None, screenshot='defualt'):
+        """
+        #Rendering only the vertices of mesh as sphees and asign color to rach sphere
+        :param func: Color map weighted function
+        :param colormap: Color pallet
+        :return: Ploting the graph
+        """
+        pointcloud = pv.PolyData(self.v)
+        pointcloud['color'] = func
+        pointcloud.plot(render_points_as_spheres=True, cmap=colormap, screenshot=screenshot)
 
 if __name__ == '__main__':
     #######################################################
     ##############------ Section 1 ------##################
     # source = (383, 814)
     # target = (233, 8)
-    # section1(r'Resources\maze.png', source, target)
+    # Sec1(r'Resources\maze.png', source, target)
     #
     #######################################################
     ##############------ Section 2 ------##################
     # source_pool = (0,0)
     # target_pool = (499,399)
-    # section2(pjoin(os.getcwd(), 'Resources'),source_pool,target_pool)
+    # Sec2(pjoin(os.getcwd(), 'Resources'),source_pool,target_pool)
     # # Flip to verify this is indeed correct # #
-    # section2(pjoin(os.getcwd(), 'Resources'),target_pool,source_pool)
+    # Sec2(pjoin(os.getcwd(), 'Resources'),target_pool,source_pool)
 
     #######################################################
     ##############------ Section 4 ------##################
-    # err_MDS = section4(r'Resources\tr_reg_000.ply', n_dim=3, embedding='MDS')
-    # err_SMDS = section4(r'Resources\tr_reg_000.ply', n_dim=3, embedding='Spherical MDS')
+    # err_MDS = Sec4(r'Resources\tr_reg_000.ply', n_dim=3, embedding='MDS')
+    # err_SMDS = Sec4(r'Resources\tr_reg_000.ply', n_dim=3, embedding='Spherical MDS')
 
-    # err_MDS = section4(r'Resources\tr_reg_001.ply', n_dim=3, embedding='MDS')
-    # err_SMDS = section4(r'Resources\tr_reg_001.ply', n_dim=3, embedding='Spherical MDS')
+    # err_MDS = Sec4(r'Resources\tr_reg_001.ply', n_dim=3, embedding='MDS')
+    # err_SMDS = Sec4(r'Resources\tr_reg_001.ply', n_dim=3, embedding='Spherical MDS')
 
     #######################################################
     ##############------ Section 5 ------##################
-    # section5(r'Resources\tr_reg_000.ply',(1000, 2000, 4000), 500)
-    # section5(r'Resources\tr_reg_001.ply', (1000, 2000, 4000), 500)
+    # Sec5(r'Resources\tr_reg_000.ply',(1000, 2000, 4000), 500)
+    # Sec5(r'Resources\tr_reg_001.ply', (1000, 2000, 4000), 500)
 
     plt.show()
     print('Finish')
