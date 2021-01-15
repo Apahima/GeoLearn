@@ -91,8 +91,9 @@ def MDS(data, n_dim):
     i, n_feature = data.shape
     H = np.identity(i) - (1 / i) * np.ones_like(data)
     K = -0.5 * (H @ (data**2) @ H)
+    R = spectral_decomp(K, n_dim)
 
-    return spectral_decomp(K, n_dim)
+    return R
 
 def spherical_mds(data, n_dim):
     """
@@ -101,10 +102,10 @@ def spherical_mds(data, n_dim):
     :param n_dim: number of dimention to embed
     :return: Spherical embedded data
     """
-
     Data_phi = np.cos(data)
+    Spectral_Spherical = spectral_decomp(Data_phi, n_dim)
 
-    return spectral_decomp(Data_phi, n_dim)
+    return Spectral_Spherical
 
 def spectral_decomp(data,n_dim):
     """
@@ -144,6 +145,11 @@ def FarestPointSampling(geodesics_dist, n_dim_compress, init_v):
     return vertic_set
 
 def Sec1(path, source, target):
+    """
+    :param path: path to file
+    :param source: the source for computing
+    :param target: the target for computing
+    """
     im_maze = np.asarray(Image.open(path).convert('1'), dtype=np.int) #Load the binary image
     rows, cols = im_maze.shape
 
@@ -173,6 +179,11 @@ def Sec1(path, source, target):
     plotting_shortest_path(im_graph, shortest_path_dijkstra, 'Shoertest path using Graph Dijkstra method')
 
 def Sec2(path, source_pool, target_pool):
+    """
+    :param path: path to file
+    :param source_pool: the source for computing
+    :param target_pool: the target for computing
+    """
 
     mat_fname = pjoin(path, 'pool.mat')
     mat_contents = sio.loadmat(mat_fname)
@@ -186,11 +197,14 @@ def Sec2(path, source_pool, target_pool):
     plotting_shortest_path(pool, path_pool, 'OPL Shortest path')
 
 def Sec4(path, n_dim = 2, embedding='MDS'):
+    """
+    :param path: The path for the mesh file
+    :param n_dim: number of dim.
+    :param embedding: which method to use for embbeding MDS or Spherical MDS
+    """
 
     file_path = path.split('.')[0]
     mesh_str = file_path.split('tr_')[1]
-
-    # Load mesh from .ply file
     ply = meshio.read(path)
     vertices = ply.points
     faces = ply.cells_dict['triangle']
@@ -202,8 +216,7 @@ def Sec4(path, n_dim = 2, embedding='MDS'):
     #loading numpy matrix
     geodesics_dist = np.load(r'{}.npy'.format(mesh_str))
 
-    #plot the mesh
-    msm = Mesh(v=vertices, f=faces).render_pointcloud(geodesics_dist[:, 250], screenshot=mesh_str)
+    Mesh(v=vertices, f=faces).render_pointcloud(geodesics_dist[:, 250], screenshot=mesh_str)
 
     if embedding == 'MDS':
         isometric_embedding_mds = MDS(geodesics_dist, n_dim)
@@ -221,21 +234,22 @@ def Sec4(path, n_dim = 2, embedding='MDS'):
         # loading numpy array matrix
         embbeded_n_dim_geodesic_distance = np.load(r'{}_n_dim_{}.npy'.format(embedding,mesh_str))
 
-    msm_embed = Mesh(v=isometric_embedding_mds, f=faces).render_pointcloud(embbeded_n_dim_geodesic_distance[:, 250],
+        Mesh(v=isometric_embedding_mds, f=faces).render_pointcloud(embbeded_n_dim_geodesic_distance[:, 250],
                                                                            screenshot=mesh_str +'_'+ embedding)
 
     return np.linalg.norm((geodesics_dist - embbeded_n_dim_geodesic_distance), ord='fro')
 
 
 def Sec5(path, compress_to, init_v):
+    """
+    :param path: The path for the mesh file
+    :param compress_to: number of points to compress
+    :param init_v: the initial vertex to start with
+    """
     file_path = path.split('.')[0]
     mesh_str = file_path.split('tr_')[1]
-
-    # Load mesh from .ply file
     ply = meshio.read(path)
     vertices = ply.points
-
-
     n_points, _ = ply.points.shape
 
     # # # Compute the geodesic distance by build-in package
