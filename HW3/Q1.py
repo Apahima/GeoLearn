@@ -204,10 +204,10 @@ def Sec4(path, n_dim = 2, embedding='MDS'):
     """
 
     file_path = path.split('.')[0]
-    mesh_str = file_path.split('tr_')[1]
-    ply = meshio.read(path)
-    vertices = ply.points
-    faces = ply.cells_dict['triangle']
+    mesh_str = file_path.split('tr_')[1] #Loading and splitting to save the data and figures
+    ply = meshio.read(path) #Read the ply file
+    vertices = ply.points #Extracting vertices
+    faces = ply.cells_dict['triangle'] #Extracting faces
 
     # # # Compute the geodesic distance by build-in package
     geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
@@ -247,9 +247,9 @@ def Sec5(path, compress_to, init_v):
     :param init_v: the initial vertex to start with
     """
     file_path = path.split('.')[0]
-    mesh_str = file_path.split('tr_')[1]
-    ply = meshio.read(path)
-    vertices = ply.points
+    mesh_str = file_path.split('tr_')[1] #Loading and splitting to save the data and figures
+    ply = meshio.read(path) #Read the ply file
+    vertices = ply.points #Extracting vertices
     n_points, _ = ply.points.shape
 
     # # # Compute the geodesic distance by build-in package
