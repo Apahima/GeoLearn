@@ -2,13 +2,12 @@ import numpy as np
 import os
 import eikonalfm
 import matplotlib.pyplot as plt
-from os.path import dirname, join as pjoin
+from os.path import join as pjoin
 import scipy.io as sio
 import networkx as nx
 from PIL import Image
 import meshio
 import gdist
-import scipy
 import pyvista as pv
 
 
@@ -323,8 +322,8 @@ if __name__ == '__main__':
 
     #######################################################
     ##############------ Section 5 ------##################
-    # Sec5(r'Resources\tr_reg_000.ply',(1000, 2000, 4000), 500)
-    # Sec5(r'Resources\tr_reg_001.ply', (1000, 2000, 4000), 500)
+    # Sec5(r'Resources\tr_reg_000.ply',(1000, 2000, 4000), 120)
+    # Sec5(r'Resources\tr_reg_001.ply', (1000, 2000, 4000), 120)
 
     plt.show()
     print('Finish')

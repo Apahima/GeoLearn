@@ -1,6 +1,3 @@
-import matplotlib.pyplot as plt
-from os.path import dirname, join as pjoin
-import os
 from HW3 import Q1
 
 if __name__ == '__main__':
