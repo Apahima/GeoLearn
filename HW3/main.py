@@ -3,10 +3,10 @@ from HW3 import Q1
 if __name__ == '__main__':
     # ######################################################
     # #############------ Section 1 ------##################
-    # source = (383, 814)
-    # target = (233, 8)
-    # Q1.Sec1(r'Resources\maze.png', source, target)
-    #
+    source = (383, 814)
+    target = (233, 8)
+    Q1.Sec1(r'Resources\maze.png', source, target)
+
     # ######################################################
     # #############------ Section 2 ------##################
     # source_pool = (0,0)
@@ -22,11 +22,11 @@ if __name__ == '__main__':
     # #
     # err_MDS_001 = Q1.Sec4(r'Resources\tr_reg_001.ply', n_dim=3, embedding='MDS')
     # err_SMDS_001 = Q1.Sec4(r'Resources\tr_reg_001.ply', n_dim=3, embedding='Spherical MDS')
-    #
+
     # ######################################################
     # #############------ Section 5 ------##################
-    Q1.Sec5(r'Resources\tr_reg_000.ply',(1000, 2000, 4000), 234)
-    Q1.Sec5(r'Resources\tr_reg_001.ply', (1000, 2000, 4000), 234)
+    # Q1.Sec5(r'Resources\tr_reg_000.ply',(1000, 2000, 4000), 234)
+    # Q1.Sec5(r'Resources\tr_reg_001.ply', (1000, 2000, 4000), 234)
 
     # print('err_MDS_000 = {}'.format(err_MDS_000))
     # print('err_SMDS_000 = {}'.format(err_SMDS_000))
