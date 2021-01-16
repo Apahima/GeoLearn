@@ -74,7 +74,7 @@ def Graph_adj(data):
         # Condisder i as vertices, find the j vertices to connet i and create edge
         if data_as_vec[i] == 1:
             position = np.asarray([i // colums, i % colums]) + neighbours
-            position = np.minimum((rows - 1,colums - 1), np.maximum(position, (0,0))) #np.clip(position , (0,0), (rows - 1,colums - 1))
+            position = np.minimum((rows - 1,colums - 1), np.maximum(position, (0,0)))
             for q, w in position:
                 if data[q, w] == 1:
                     # find the index of j connected neighbour
