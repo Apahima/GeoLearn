@@ -1,0 +1,211 @@
+\\
+
+The relevant \emph{python} files for subsections \ref{subsec:perlim}, \ref{subsec:isom}, \ref{subsec:mcurve}, \ref{subsec:app} are \emph{mesh3.py, q2.py}, and for subsection \ref{subsec:classification} the relevant \emph{python} files are \emph{mesh3.py, q2.6.py}.\\
+
+\subsection{}\label{subsec:perlim}
+We have implemented a \emph{class} name \textbf{mesh} that holds all required functions in this question. 
+\begin{enumerate}
+    \item The \textbf{mesh} is defined for a single '.ply' file by the \emph{filename} input.
+    \item For a given file, the \textbf{mesh} is keeping its faces and vertices as arguments: self.f, self.v accordingly.
+    \item The \textbf{mesh} receives a string input, \emph{cls} $\in$ ['half\_cotangent', 'uniform'], that sets the methods it's weighted\_adjacency, Laplacian (and other dependent arguments) are calculated.
+\end{enumerate}
+
+As required, we have added to the class the functions:
+\begin{itemize}
+    \item def weighted\_adjacency()
+    \item def Laplacian()
+    \item barycenter\_vertex\_mass\_matrix()
+\end{itemize}
+
+\subsection{}\label{subsec:l_spec}
+We implemented an additional class function Laplacian\_spectrum(k) that computes the first k eigenfunctions and eigenvectors of the relevant Laplacian supplied by cls for the class; solving the generalized eigenvalue problem:
+\[
+\mathcal{L}\mathbf{v}=\lambda\mathcal{M}\mathbf{v}
+\]
+$\mathcal{L}$ being the Laplacian and $\mathcal{M}$ the \emph{barycenter\_vertex\_mass\_matrix}. Indeed, for both the 'uniform' weight matrix, and the 'half\_cotangent' (cotangent weight matrix) we have received a first eigenvalue of 0, with a constant eigenvector.
+
+\subsection{}\label{subsec:isom}
+Hereby, we show the first 5 eigenfunctions as (color mapped) scalar
+functions on the vertices of a two pairs of isometric shapes from FAUST for both Laplacians: \textbf{'half\_cotangent'} in figures \ref{fig:hc_eig_subj0} \& \ref{fig:hc_eig_subj9}, \textbf{'uniform'} in figures \ref{fig:uni_eig_subj0} \& \ref{fig:uni_eig_subj9}.\\
+We know that as the LBO depends only on the Riemannian metric G, it is invariant to isometric transformations of the shape and so are its eigenvalues and eigenfunctions, although this is true up to a sign. In order to cope with sign inconsistencies, each eigenfunction $f$ was adjusted such that $f(x_0)\geq 0$ for a constant, predetermined, $x_0$; it seems to resolve the sign  inconsistency in the tested examples we produced. It is an evident from the figures that the eigenfunctions are indeed approximately isometry invariant for both Laplacians. There are perhaps negligible differences that are not recognizable to the naked eye and can be explained by the discretization of the original shape and the inaccurate approximation of the Laplace-Beltrami operator of both methods. We also note that there is a similarity between the ordered eigenfunctions of both Laplacians, with a constant first eigenfunction in both (of course) and in the letter eigenfunctions similar behavior around the limbs, stomach, had, etc, up to a sign and intensity distribution -- e.g, in the second eigenfunction we see the lowest/highest values at the right/left hands (up to signs) and in the fifth we see similar behavior between the legs; similarly, the similarity also exists for the third and fourth eigenfunctions as well. 
+
+\begin{figure*}[h]
+\centering
+\begin{tabular}{cc}
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q3/i2_hc-0,2.374,3.179,4.933,7.263.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q3/i3_hc-0,2.37,3.158,4.837,7.205.PNG} \\
+    \small Pose 2 & \small Pose 3
+\end{tabular}
+ \caption{\small The first 5 eigenfunctions of the \textbf{'half\_cotangent'} Laplacian, as (color mapped) scalar
+functions on the vertices of two isometric shapes: two poses of subject \#0 from FAUST. The eigen vectors are Raster ordered -- left-to-right, up-tp-down. I.e, upper-left: eigenvector 1, upper-right: eigenvector 2, middle-left: eigenvector 3, middle-right: eigenvector 4, bottom: eigenvector 5}
+ \label{fig:hc_eig_subj0}
+\end{figure*}
+
+\begin{figure*}[h]
+\centering
+\begin{tabular}{cc}
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q3/i98_hc-0,2.232,3.085,4.68,7.263_sign.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q3/i99_hc-0,2.071,3.083,4.4,6.81_sign.PNG} \\
+    \small Pose 8 & \small Pose 9
+\end{tabular}
+ \caption{\small The first 5 eigenfunctions of the \textbf{'half\_cotangent'} Laplacian, as (color mapped) scalar
+functions on the vertices of two isometric shapes: two poses of subject \#9 from FAUST. The eigen vectors are Raster ordered -- left-to-right, up-to-down. I.e, upper-left: eigenvector 1, upper-right: eigenvector 2, middle-left: eigenvector 3, middle-right: eigenvector 4, bottom: eigenvector 5}
+ \label{fig:hc_eig_subj9}
+\end{figure*}
+
+
+\begin{figure*}[h]
+\centering
+\begin{tabular}{cc}
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q3/i2_uni-0,4.68,7.757,10.1523,15.478.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q3/i3_uni-0,4.64,7.76,10.1865,15.323.PNG} \\
+    \small Pose 2 & \small Pose 3
+\end{tabular}
+ \caption{\small The first 5 eigenfunctions of the \textbf{'uniform'} Laplacian, as (color mapped) scalar
+functions on the vertices of two isometric shapes: two poses of subject \#0 from FAUST. The eigen vectors are Raster ordered -- left-to-right, up-tp-down. I.e, upper-left: eigenvector 1, upper-right: eigenvector 2, middle-left: eigenvector 3, middle-right: eigenvector 4, bottom: eigenvector 5}
+ \label{fig:uni_eig_subj0}
+\end{figure*}
+
+\begin{figure*}[h]
+\centering
+\begin{tabular}{cc}
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q3/i98_uni-0,4.038,6.649,8.895,13.757.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q3/i99_uni-0,4.0596.656,8.808,13.896.PNG} \\
+    \small Pose 8 & \small Pose 9
+\end{tabular}
+ \caption{\small The first 5 eigenfunctions of the \textbf{'uniform'} Laplacian, as (color mapped) scalar
+functions on the vertices of two isometric shapes: two poses of subject \#9 from FAUST. The eigen vectors are Raster ordered -- left-to-right, up-to-down. I.e, upper-left: eigenvector 1, upper-right: eigenvector 2, middle-left: eigenvector 3, middle-right: eigenvector 4, bottom: eigenvector 5}
+ \label{fig:uni_eig_subj9}
+\end{figure*}
+
+\subsection{}\label{subsec:mcurve}
+In this section we used the area normalized Laplacian applied to the vertex positions to supply a pointwise approximation of the mean curvature normal, along with using the vertex normals to recover the sign. After we got the per-vertex \emph{unsigned} mean curvature, we have a positive function, thus we can use the logarithm function to relax the numerical outliers to better observe the \emph{signed curvature}; adding 1 to all values and using the sign of the signed curvature: $log(1+|H_n|)*sign(H_n)$. Results are presented on the vertices of a two pairs of isometric shapes from FAUST for both Laplacians in figures \ref{fig:hc_mcurve}, \ref{fig:uni_mcurve}. \\
+
+Applying the normalized Laplacian matrix to the vertex positions results in the difference between every vertex and the average of its neighbors, then by simply taking the magnitude of this difference for every given vertex yields a kind of revaluation on how far away its neighbors are; which essentially can be translated to how high/low a single vertex is with respect to its neighbors. To recover the sign, we use the positive/negative sign on the operator and the sign given by the normal; i.e if it higher/lower depending on the direction we chose as the exterior/interior of the surface. This interpretation we have noted is particularly correct when we use the \textbf{'uniform'} Laplacian.
+
+This approach can be better as we can easily see the following troublesome: even if there isn't much curvature over a large range, if the neighbors are far away and there's even a little bit of curvature, then the magnitude will be large. Another way of saying this is that two triangular pyramids with the same height but different sized bases will end up with the same difference between their apex and base. But the pyramid with the smaller base intuitively has much more curvature. The solution is actually apparent while considering the \textbf{'half\_cotangent'} method, which takes under attention that the mean curvature is proportional to the sum of the cotangent weights each scaled by the distance of a point to its neighboring point,\footnote{https://mrl.cs.nyu.edu/~dzorin/geom04/lectures/lect08.pdf, http://www.ctralie.com/Teaching/LapMesh/}.
+
+It is evident that indeed in the 'half\_cotangent' method we see results even in areas with a lower mean curvature, and do not get high values in places where it is clear that there is no relatively high mean curvature. For example, the thighs for subject number \#1 and also the pelvis were identified, where it is clear that there is mean curvature. As opposed to a high identification in the left leg with the 'uniform' method, where the mean curvature is expected to be relatively low. Similar results exist in other cases and also for subject \#2. As seen in figure \ref{fig:hc_mcurve_compare}.
+
+\begin{figure*}[h]
+\centering
+\begin{tabular}{cc}
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q4/hc_i14_0_new_log-face.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q4/hc_i14_1_new_log-face.PNG} \\ 
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q4/hc_i23_1_new_log-face.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q4/hc_i23_0_new_log-face.PNG}
+\end{tabular}
+ \caption{\small An approximation of the mean curvature normal for the \textbf{'half\_cotangent'} Laplacian, as (color mapped) scalar
+function on the vertices of the mesh of subject \#1 with pose 4 (top row) and subject \#2 with pose 2 (bottom row) from FAUST.}
+ \label{fig:hc_mcurve}
+\end{figure*}
+
+\begin{figure*}[h]
+\centering
+\begin{tabular}{cc}
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q4/uni_i14_0_new_log-face.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q4/uni_i14_1_new_log-face.PNG} \\
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q4/uni_i23_0_new_log-face.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q4/uni_i23_1_new_log-face.PNG}
+\end{tabular}
+ \caption{\small An approximation of the mean curvature normal for the \textbf{'uniform'} Laplacian, as (color mapped) scalar
+function on the vertices of the mesh of subject \#1 with pose 4 (top row) and subject \#2 with pose 2 (bottom row) from FAUST}
+ \label{fig:uni_mcurve}
+\end{figure*}
+
+
+\begin{figure*}[h]
+\centering
+\begin{tabular}{ccc}
+    \includegraphics[width=0.3\linewidth]{figs/Ex2/Q4/compare14. left_hc.PNG} &
+    \includegraphics[width=0.25\linewidth]{figs/Ex2/Q4/compare14. left_hc_2.PNG} &
+    \includegraphics[width=0.25\linewidth]{figs/Ex2/Q4/compare23. left_hc.PNG}
+\end{tabular}
+ \caption{\small comparison between two Laplacian discretization methods. foe every image-pair: Left-'half\_cotangent', right-'uniform'.}
+ \label{fig:hc_mcurve_compare}
+\end{figure*}
+
+
+\subsection{}\label{subsec:app}
+In this section we have selected three scalar functions:
+\begin{enumerate}
+    \item Euclidean-distance from centre of mass
+    \item Narrow Gaussian function at center of mass
+    \item Wider Gaussian at center of mass
+\end{enumerate}
+and two meshes from FAUST: subject 1, pose 4 and subject 2 pose 3.
+In figures \ref{fig:hc_app}, \ref{fig:uni_app} we approximate each scalar function using the Laplacian eigen decomposition with varying bandwidth values, for each Laplacian. We see that in both Laplacian methods, the smoother the function are (slower the spatial frequencies), the easier it is to evaluate the function with less eigenfunctions. For example, it is clear that the Euclidean distance function is well approximated with only ten coefficients, while for the wide Gaussian we needed about 50 coefficients. In contrast, thee approximation of the narrow Gaussian with the maximum amount of coefficients was insufficient and the difference between the approximation and the original function is considerable. It is evident that the two methods yield similar results in the quality of the approximation of the functions with the same order of eigenfunctions. Although, there is variation in the details themselves.
+
+For the Narrow Gaussian function at center of mass we also plotted the function’s (area normalized) Laplacian \(\mathcal{M}^{-1}\mathcal{L}\mathbf{f}\) in figure \ref{fig:narrow_app}, for both Laplacians. Applying the normalized Laplacian matrix to the function results in the difference between every point of the function and the average of its neighbors and it gives an approximation to the second derivative of the function itself. Thus, as we have selected a narrow Gaussian function, we see the high consternation of energy around the pick of the Gaussian.
+
+\begin{figure*}[p]
+\centering
+\begin{tabular}{cc}
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q5/hc14_k10,20,50.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q5/hc23_k10,20,50.PNG} \\
+    \small Function\hspace{2em}k=10\hspace{3em}k=20\hspace{3em}k=50 & \small Function\hspace{2em}k=10\hspace{3em}k=20\hspace{3em}k=50 \\
+    \small Subject 1, Pose 4 & \small Subject 2, Pose 3
+\end{tabular}
+ \caption{\small Approximate each scalar function using the \textbf{'half\_cotangent'} Laplacian eigen decomposition with varying bandwidth values: k=10,20,50. \textbf{First row}-Euclidean-distance, \textbf{Second row}-Narrow Gaussian, \textbf{Third row}-Wider Gaussian.}
+ \label{fig:hc_app}
+\end{figure*}
+
+\begin{figure*}[p]
+\centering
+\begin{tabular}{cc}
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q5/uni14_k10,20,50.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q5/uni23_k10,20,50.PNG} \\
+    \small Function\hspace{2em}k=10\hspace{3em}k=20\hspace{3em}k=50 & \small Function\hspace{2em}k=10\hspace{3em}k=20\hspace{3em}k=50 \\
+    \small Subject 1, Pose 4 & \small Subject 2, Pose 3
+\end{tabular}
+ \caption{\small Approximate each scalar function using the \textbf{'uniform'} Laplacian eigen decomposition with varying bandwidth values: k=10,20,50. \textbf{First row}-Euclidean-distance, \textbf{Second row}-Narrow Gaussian, \textbf{Third row}-Wider Gaussian.}
+ \label{fig:uni_app}
+\end{figure*}
+
+\begin{figure*}[p]
+\centering
+\begin{tabular}{cc}
+    \includegraphics[width=0.42\linewidth]{figs/Ex2/Q5/hc_norm_lap_narrow_gauss.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q5/uni_norm_lap_narrow_gauss.PNG} \\
+    \small 'half\_cotangent' & \small 'uniform' 
+\end{tabular}
+ \caption{\small function’s (area normalized) Laplacian \(\mathcal{M}^{-1}\mathcal{L}\mathbf{f}\) for Narrow Gaussian function.}
+  \label{fig:narrow_app}
+\end{figure*}
+
+\subsection{}\label{subsec:classification}
+Following the supplementary material, we have implemented the three spectral descriptors:
+\begin{enumerate}
+    \item The ShapeDNA.
+    \item The Global Point Signature (GPS).
+    \item The Heat Kernel Signature (HKS). using 10 time samples, logarithmically separated.
+\end{enumerate}
+ At first, we show the heat kernel signature for the 10 selected time samples logarithmically spread between t=1e-3 to t=10 for the 'half\_cotangent' Laplacian and between t=1e-3 to t=10 for the 'uniform' Laplacian; for two different subjects, \#1 \& \#2, and two different poses for each one, as in figures \ref{fig:hc_hks}, \ref{fig:uni_hks}. Using the k=1000 first eigenfunctions.
+ 
+ \begin{figure*}[p]
+\centering
+\begin{tabular}{cc}
+    \small Subject 1, Pose 3 & \small Subject 1, Pose 4\\
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q6/hks1000_hc_i13_t-1e-3to10.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q6/hks1000_hc_i14_t-1e-3to10.PNG} \\
+    \small Subject 2, Pose 5 & \small Subject 2, Pose 6 \\
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q6/hks1000_hc_i25_t-1e-3to10.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q6/hks1000_hc_i26_t-1e-3to10.PNG}
+\end{tabular}
+ \caption{\small heat kernel signature for the 10 selected time samples logarithmically spread between t=1e-3 to t=10 for the \textbf{'half\_cotangent'} Laplacian, for selected meshes from FAUST.}
+ \label{fig:hc_hks}
+\end{figure*}
+
+ \begin{figure*}[p]
+\centering
+\begin{tabular}{cc}
+    \small Subject 1, Pose 3 & \small Subject 1, Pose 4\\
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q6/hks1000_uni_i13_t-1e-3to5.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q6/hks1000_uni_i14_t-1e-3to5.PNG} \\
+    \small Subject 2, Pose 5 & \small Subject 2, Pose 6 \\
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q6/hks1000_uni_i25_t-1e-3to5.PNG} &
+    \includegraphics[width=0.45\linewidth]{figs/Ex2/Q6/hks1000_uni_i26_t-1e-3to5.PNG}
+\end{tabular}
+ \caption{\small heat kernel signature for the 10 selected time samples logarithmically spread between t=1e-3 to t=10 for the \textbf{'uniform'} Laplacian, for selected meshes from FAUST.}
+ \label{fig:uni_hks}
+\end{figure*}
