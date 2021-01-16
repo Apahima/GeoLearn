@@ -249,6 +249,7 @@ def Sec5(path, compress_to, init_v):
     file_path = path.split('.')[0]
     mesh_str = file_path.split('tr_')[1] #Loading and splitting to save the data and figures
     ply = meshio.read(path) #Read the ply file
+    faces = ply.cells_dict['triangle']  # Extracting faces
     vertices = ply.points #Extracting vertices
     n_points, _ = ply.points.shape
 
