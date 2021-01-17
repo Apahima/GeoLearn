@@ -67,7 +67,14 @@ def Graph_adj(data):
     data_as_vec = data.flatten() #Copy data array to new indexing array
     # Build neighbour like array with indexing
     neighbours = np.asarray(
-        [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)],
+        [(-1, -1),
+         (-1, 0),
+         (-1, 1),
+         (0, -1),
+         (0, 1),
+         (1, -1),
+         (1, 0),
+         (1, 1)],
         dtype=np.int)
 
     for i in range(N_element):
@@ -139,6 +146,7 @@ def FarestPointSampling(geodesics_dist, n_dim_compress, init_v):
     for i in range(n_dim_compress - 1):
         reduced = geodesics_dist[:, vertic_set]
         # Using argmax{min{d(v,s)}}
+        # Choose the maximal point which is the closet to
         v = np.argmax(np.min(reduced, axis=1), axis=0)
         vertic_set.append(v)
 
@@ -209,6 +217,7 @@ def Sec4(path, n_dim = 2, embedding='MDS'):
     ply = meshio.read(path) #Read the ply file
     vertices = ply.points #Extracting vertices
     faces = ply.cells_dict['triangle'] #Extracting faces
+    faces_fix = np.concatenate((np.expand_dims(len(faces[0]) * np.ones((len(faces)), ), 1).astype(np.int), np.array(faces)), 1)
 
     # # # Compute the geodesic distance by build-in package
     geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
@@ -248,23 +257,24 @@ def Sec5(path, compress_to, init_v):
     """
     file_path = path.split('.')[0]
     mesh_str = file_path.split('tr_')[1] #Loading and splitting to save the data and figures
-    ply = meshio.read(path) #Read the ply file
+    ply = meshio.read(path, "ply") #Read the ply file
     faces = ply.cells_dict['triangle']  # Extracting faces
+    faces_fix = np.concatenate((np.expand_dims(len(faces[0]) * np.ones((len(faces)), ), 1).astype(np.int), np.array(faces)), 1)
     vertices = ply.points #Extracting vertices
     n_points, _ = ply.points.shape
 
     # # # Compute the geodesic distance by build-in package
-    geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
+    # geodesics_dist = gdist.local_gdist_matrix(vertices.astype(np.float64), faces.astype(np.int32))
     # # Saving numpy array
-    np.save(mesh_str, geodesics_dist.toarray())
+    # np.save(mesh_str, geodesics_dist.toarray())
     #loading numpy matrix
     geodesics_dist = np.load(r'{}.npy'.format(mesh_str))
 
     mesh_plot = pv.Plotter(shape=(1,4))
 
-    pointcloud = pv.PolyData(vertices)
+    pointcloud = pv.PolyData(vertices,faces_fix)
     mesh_plot.subplot(0,0)
-    mesh_plot.add_mesh(pointcloud, cmap='hot', scalars=geodesics_dist)
+    mesh_plot.add_mesh(pointcloud, cmap='hot', scalars=geodesics_dist, show_edges=True)
     mesh_plot.add_text('Original Mesh {} vertices'.format(n_points))
 
     for i in range(len(compress_to)):
@@ -273,9 +283,10 @@ def Sec5(path, compress_to, init_v):
         vertices_reduced = vertices[vertices_set]
         gdists_reduced = geodesics_dist[init_v, vertices_set]
 
-        pointcloud = pv.PolyData(vertices_reduced)
+        # pointcloud = pv.PolyData(vertices_reduced)
         mesh_plot.subplot(0, i + 1)
-        mesh_plot.add_mesh(pointcloud, cmap='hot', scalars=gdists_reduced)
+        mesh_plot.add_mesh(pointcloud, cmap='hot', scalars=geodesics_dist, show_edges=True)
+        mesh_plot.add_mesh(vertices_reduced, render_points_as_spheres=True, point_size=7)
         mesh_plot.add_text('Geo. colored {} vertices'.format(compress_to[i]))
 
     mesh_plot.show(full_screen=True,screenshot='{}_ReducedMesh by FarestPointSampling'.format(mesh_str))

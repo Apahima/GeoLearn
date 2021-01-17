@@ -1,10 +1,15 @@
 from HW3 import Q1
+from os.path import join as pjoin
+import os
 
 if __name__ == '__main__':
     # ######################################################
     # #############------ Section 1 ------##################
-    # source = (383, 814)
-    # target = (233, 8)
+    source = (383, 814)
+    target = (233, 8)
+    # Source to Target
+    Q1.Sec1(r'Resources\maze.png', target, source)
+    # # Target to Source
     # Q1.Sec1(r'Resources\maze.png', source, target)
 
     # ######################################################
@@ -12,7 +17,7 @@ if __name__ == '__main__':
     # source_pool = (0,0)
     # target_pool = (499,399)
     # Q1.Sec2(pjoin(os.getcwd(), 'Resources'),source_pool,target_pool)
-    # # Flip to verify this is indeed correct # #
+    # Flip to verify this is indeed correct method # #
     # Q1.Sec2(pjoin(os.getcwd(), 'Resources'),target_pool,source_pool)
 
     # ######################################################
@@ -25,8 +30,8 @@ if __name__ == '__main__':
 
     # ######################################################
     # #############------ Section 5 ------##################
-    # Q1.Sec5(r'Resources\tr_reg_000.ply',(1000, 2000, 4000), 234)
-    # Q1.Sec5(r'Resources\tr_reg_001.ply', (1000, 2000, 4000), 234)
+    # Q1.Sec5(r'Resources\tr_reg_000.ply',(1000, 2000, 3000), 234)
+    # Q1.Sec5(r'Resources\tr_reg_001.ply', (1000, 2000, 3000), 234)
 
     # print('err_MDS_000 = {}'.format(err_MDS_000))
     # print('err_SMDS_000 = {}'.format(err_SMDS_000))
