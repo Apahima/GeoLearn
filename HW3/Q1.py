@@ -158,11 +158,13 @@ def Sec1(path, source, target):
     :param source: the source for computing
     :param target: the target for computing
     """
-    im_maze = np.asarray(Image.open(path).convert('1'), dtype=np.int) #Load the binary image
+    im_maze = Image.open(path).convert('L') #Load the binary image
+    im_maze = np.asarray(im_maze.point(lambda x: 0 if x < 128 else 255, '1'), dtype=np.int)
     rows, cols = im_maze.shape
 
-    maze_bw = im_maze * 10000 #Scaling for Fast Narching Method
-    maze_bw += 1 #Add 1 to avoid zeros
+    maze_bw = np.zeros_like(im_maze)
+    maze_bw[im_maze == 1] = 1000 #Scaling for Fast Narching Method
+    maze_bw[im_maze == 0] = 1 #Add 1 to avoid zeros
 
 
     dx = (1.0,1.0)
@@ -170,22 +172,35 @@ def Sec1(path, source, target):
 
     # Using build-in package FFM
     tau_fm = eikonalfm.fast_marching(maze_bw, source, dx, order)
+
+    ### Creating contur for background
+    Contur_Color = eikonalfm.fast_marching(maze_bw, (383, 814), dx, order)
+    Contur_Color[im_maze == 0] = -0.1
+    Contur_Color[im_maze == 1] = ((Contur_Color[im_maze == 1] - 0) / (np.max(Contur_Color) - 0))
+    plt.figure()
+    manager = plt.get_current_fig_manager()
+    manager.window.showMaximized()
+    plt.imshow(Contur_Color, cmap='jet')
+    plt.title('Distance map as contour color map')
+    plt.savefig('Colored Contur')
+    plt.show()
+    #####
+
     path_maze = shortest_path(tau_fm,source,target)
-    plotting_shortest_path(im_maze, path_maze,'Fast Marching Method',tau_fm)
+    plotting_shortest_path(Contur_Color, path_maze,'Fast Marching Method',tau_fm)
 
     maze_adj = Graph_adj(im_maze)
     maze_graph_shortest_path = nx.shortest_path(
         maze_adj, source=int(source[0] * cols + source[1]), target=int(target[0] * cols + target[1])
     )
 
-    im_graph = np.where(im_maze == 1, 255, 0)
     shortest_path_dijkstra = []
     for node in maze_graph_shortest_path:
         row, col = np.asarray([node // cols, node % cols])
         shortest_path_dijkstra.append((row, col))
 
     shortest_path_dijkstra = [t[::-1] for t in shortest_path_dijkstra] #Flip the touple to be X,Y oder coordinates
-    plotting_shortest_path(im_graph, shortest_path_dijkstra, 'Shoertest path using Graph Dijkstra method')
+    plotting_shortest_path(Contur_Color, shortest_path_dijkstra, 'Shoertest path using Graph Dijkstra method')
 
 def Sec2(path, source_pool, target_pool):
     """

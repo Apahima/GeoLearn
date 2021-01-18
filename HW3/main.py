@@ -7,10 +7,10 @@ if __name__ == '__main__':
     # #############------ Section 1 ------##################
     source = (383, 814)
     target = (233, 8)
-    # Source to Target
+    # # Source to Target
     Q1.Sec1(r'Resources\maze.png', target, source)
     # # Target to Source
-    # Q1.Sec1(r'Resources\maze.png', source, target)
+    Q1.Sec1(r'Resources\maze.png', source, target)
 
     # ######################################################
     # #############------ Section 2 ------##################
