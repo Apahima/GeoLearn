@@ -166,7 +166,6 @@ def Sec1(path, source, target):
     maze_bw[im_maze == 1] = 1000 #Scaling for Fast Narching Method
     maze_bw[im_maze == 0] = 1 #Add 1 to avoid zeros
 
-
     dx = (1.0,1.0)
     order = 2
 
