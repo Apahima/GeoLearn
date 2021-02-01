@@ -255,9 +255,9 @@ def plot_results(data, eigenvectors, eigenVec_idx):
 
 
 if __name__ == '__main__':
-    # path = r'PicSource\cameraman.png'
-    # resize_image = 128
-    # Sec1(path, resize_image)
+    path = r'PicSource\cameraman.png'
+    resize_image = 128
+    Sec1(path, resize_image)
 
     r = 1
     Sigma = 1
