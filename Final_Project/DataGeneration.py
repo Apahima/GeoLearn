@@ -149,8 +149,6 @@ def datageneration():
 
 
 
-
-
 def nd_ap_gendata(file_name,load = False):
     # constants
     p = np.pi
@@ -168,7 +166,7 @@ def nd_ap_gendata(file_name,load = False):
     # X, Y = plt.meshgrid(np.arange(0, 2, 1 / partition), np.arange(0, 1, 1 / partition))
     X = np.arange(0, 2, 1 / partition)
     Y = np.arange(0, 1, 1 / partition)
-    Comb_cor = product(X, Y)
+    Comb_cor = product(X, Y) #Creating all combination of X and Y
 
     def model(z,t):
         x,y = z

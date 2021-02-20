@@ -1,6 +1,6 @@
 #### https://github.com/ClementiGroup/S3D/blob/master/S%5E3D-single_traj.ipynb
 
-
+from tqdm import tqdm
 import numpy as np
 # import mdtraj as md
 import matplotlib.pyplot as plt
@@ -49,17 +49,23 @@ def kernel_neighbor_search(A, r, epsilon, sparse=False):
 
 
 def matrix_B(kernel, sparse = False):
-
+    #Equation #13
     if sparse:
         m = kernel.shape[0]
-        D = sps.csr_matrix.sum(kernel, axis=0)
-        Q = sps.spdiags(1./D, 0, m, m)
-        S = kernel * Q
-        B = (S*(sps.csr_matrix.transpose(S)))/(sps.csr_matrix.sum(S, axis=1))
+        D = sps.csr_matrix.sum(kernel, axis=0) #Diagonal matrix
+        Q = 1/D
+        P_0 = Q @ kernel #P zero at time t matrix
+        B = sps.diags((1/np.squeeze(np.asarray(P_0.sum(axis=0))))) @ P_0.T @ P_0 #B Matrix at time t equation 13
+
+        # m = kernel.shape[0]
+        # D = sps.csr_matrix.sum(kernel, axis=0) #Diagonal matrix
+        # Q = sps.spdiags(1./D, 0, m, m) #Diagonal matrix inversion
+        # P_0 = kernel * Q #P zero at time t matrix
+        # B = (P_0*(sps.csr_matrix.transpose(P_0)))/(sps.csr_matrix.sum(P_0, axis=1)) #B matrix at timt t
     else:
         D = np.sum(kernel, axis = 1)
-        S = kernel*(1./D)
-        B = (np.dot(S, S.T)/(np.sum(S, axis = 1))).T
+        P_0 = kernel*(1./D)
+        B = (np.dot(P_0, P_0.T)/(np.sum(P_0, axis = 1))).T
 
     return B
 
@@ -86,30 +92,22 @@ def compute_SpaceTimeDMap(X, r, epsilon, sparse=False):
       SpaceTime Diffusion Matrix, eq (3.13) in the paper, time average of all the matrices in the cell list
     """
 
-    # initialize the Spacetime Diffusion Map matrix
-    # that will be averaged over the different timeslices
-    # and the over the different trajectories
+
     m = np.shape(X)[1]
     T = np.shape(X)[0]
 
-    # SptDM =  sps.csr_matrix((m, m))
     SptDM = np.zeros((m, m))
 
-    # loop over trajectory
 
-    for i_t in range(T):
+    for i_t in tqdm(range(T)):
         if (i_t % 10 == 0):
             print('time slice ' + str(i_t))
-        # selecting the heavy atoms coordinates in the timeslice s
-        # compute diffusion kernel using data at timeslice s
         distance_kernel = kernel_neighbor_search(X[i_t, :, :], r, epsilon, sparse=sparse)
         SptDM += matrix_B(distance_kernel, sparse=sparse)
 
-    # divide by the total number of timeslices considered
-    # this define the Q operator
-    SptDM /= T
 
-    # Computing eigenvalues and eigenvectors of the SpaceTime DMap
+    SptDM /= T #Equation 19
+
     if sparse:
         ll, u = spl.eigs(SptDM, k=50, which='LR')
         ll, u = sort_by_norm(ll, u)
