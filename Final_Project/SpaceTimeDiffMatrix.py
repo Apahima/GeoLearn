@@ -51,7 +51,6 @@ def kernel_neighbor_search(A, r, epsilon, sparse=False):
 def matrix_B(kernel, sparse = False):
     #Equation #13
     if sparse:
-        m = kernel.shape[0]
         D = sps.csr_matrix.sum(kernel, axis=0) #Diagonal matrix
         Q = 1/D
         P_0 = Q @ kernel #P zero at time t matrix
