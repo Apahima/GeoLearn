@@ -1,10 +1,13 @@
 #Reference https://github.com/jollybao/LCS
+import os
 import pylab as plt
 import numpy as np
 import matplotlib.animation as animation
 from scipy.integrate import odeint
 from itertools import product
 from tqdm import tqdm
+import csv
+from numpy import genfromtxt
 
 def datageneration():
     fig, ax = plt.subplots(1, 1, figsize=(10, 5))
@@ -193,7 +196,21 @@ def nd_ap_gendata(file_name,load = False):
 
     return Diff_Space_time
 
-if __name__ == '__main__':
-    nd_ap_gendata()
+def BickleyJet_DG(path, load = False):
+    if load:
+        BickleyJet = np.load('BickleyJet.npy')
+    else:
+        BickleyJet_x = np.expand_dims(genfromtxt(os.path.join(path, 'bickley_x.csv'), delimiter=',').T, 2)
+        BickleyJet_y = np.expand_dims(genfromtxt(os.path.join(path, 'bickley_x.csv'), delimiter=',').T, 2)
 
+        BickleyJet = np.concatenate((BickleyJet_x, BickleyJet_y), 2)
+        np.save('BickleyJet', BickleyJet)
+        print('Data Generation Done, Array saved')
+
+    return  BickleyJet
+
+if __name__ == '__main__':
+    # nd_ap_gendata()
+
+    BickleyJet_DG(r'BickleyJet\BickleyJet')
     print('Finish')

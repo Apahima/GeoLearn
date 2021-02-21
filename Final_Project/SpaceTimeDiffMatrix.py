@@ -28,7 +28,7 @@ def kernel_neighbor_search(A, r, epsilon, sparse=False):
     """
 
     # calling nearest neighbor search class
-    kernel = neigh_search.radius_neighbors_graph(A, r, mode='distance')
+    kernel = neigh_search.radius_neighbors_graph(A, np.sqrt(r*epsilon), mode='distance')
     # computing the diffusion kernel value at the non zero matrix entries
     kernel.data = np.exp(-(kernel.data ** 2) / (epsilon))
 
@@ -50,6 +50,11 @@ def matrix_B(kernel, sparse = False):
         P_0 = Q @ kernel #P zero at time t matrix
         B = sps.diags((1/np.squeeze(np.asarray(P_0.sum(axis=0))))) @ P_0.T @ P_0 #B Matrix at time t equation 13
 
+        # m = kernel.shape[0]
+        # D = sps.csr_matrix.sum(kernel, axis=0)
+        # Q = sps.spdiags(1./D, 0, m, m)
+        # S = kernel * Q
+        # B = (S*(sps.csr_matrix.transpose(S)))/(sps.csr_matrix.sum(S, axis=1))
     else:
         D = np.sum(kernel, axis = 1)
         P_0 = kernel*(1./D)
@@ -96,14 +101,29 @@ def compute_SpaceTimeDMap(X, r, epsilon, sparse=False):
 
     SptDM = SptDM / T #Equation 19
 
-    if sparse:
-        ll, u = np.linalg.eigh(SptDM)
-        ll, u = sort_by_norm(ll, u)
-    else:
-        ll, u = np.linalg.eig(SptDM)
-        ll, u = sort_by_norm(ll, u)
+    L_SptDM  = (1/epsilon) * (SptDM - np.identity(m)) #Computing L matrix
 
-    return ll, u, SptDM
+    # np.save('eps_zero_two_speDM', SptDM)
+    # np.save('eps_zero_two_L_speDM', L_SptDM)
+    #
+    # SptDM = np.load('eps_zero_two_speDM.npy')
+    # L_SptDM = np.load('eps_zero_two_L_speDM.npy')
+
+    ll, u = spl.eigs(SptDM, k=50, which='LR')
+    plt.scatter(np.arange(11), ll[1:12])
+
+    if sparse:
+        EigenVal, EigenVec = np.linalg.eigh(SptDM)
+        EigenVal, EigenVec = sort_by_norm(EigenVal, EigenVec)
+        L_EigenVal, L_EigenVec = np.linalg.eigh(L_SptDM)
+        L_EigenVal, L_EigenVec = sort_by_norm(L_EigenVal, L_EigenVec)
+    else:
+        EigenVal, EigenVec = np.linalg.eigh(SptDM)
+        EigenVal, EigenVec = sort_by_norm(EigenVal, EigenVec)
+        L_EigenVal, L_EigenVec = np.linalg.eigh(L_SptDM)
+        L_EigenVal, L_EigenVec = sort_by_norm(L_EigenVal, L_EigenVec)
+
+    return EigenVal, EigenVec, SptDM, L_EigenVal, L_EigenVec, L_SptDM
 
 
 def sort_by_norm(evals, evecs):
