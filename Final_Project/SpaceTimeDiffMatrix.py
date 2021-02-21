@@ -2,18 +2,12 @@
 
 from tqdm import tqdm
 import numpy as np
-# import mdtraj as md
 import matplotlib.pyplot as plt
-# import pyemma
-# from pyemma import msm, plots    # pyemma APIs
-
 import scipy
 import scipy.sparse as sps
-
 import time
 import scipy.sparse.linalg as spl
 import sklearn.neighbors as neigh_search
-import sklearn.cluster as skl_cl
 import sys
 
 
@@ -56,11 +50,6 @@ def matrix_B(kernel, sparse = False):
         P_0 = Q @ kernel #P zero at time t matrix
         B = sps.diags((1/np.squeeze(np.asarray(P_0.sum(axis=0))))) @ P_0.T @ P_0 #B Matrix at time t equation 13
 
-        # m = kernel.shape[0]
-        # D = sps.csr_matrix.sum(kernel, axis=0) #Diagonal matrix
-        # Q = sps.spdiags(1./D, 0, m, m) #Diagonal matrix inversion
-        # P_0 = kernel * Q #P zero at time t matrix
-        # B = (P_0*(sps.csr_matrix.transpose(P_0)))/(sps.csr_matrix.sum(P_0, axis=1)) #B matrix at timt t
     else:
         D = np.sum(kernel, axis = 1)
         P_0 = kernel*(1./D)
@@ -105,10 +94,10 @@ def compute_SpaceTimeDMap(X, r, epsilon, sparse=False):
         SptDM += matrix_B(distance_kernel, sparse=sparse)
 
 
-    SptDM /= T #Equation 19
+    SptDM = SptDM / T #Equation 19
 
     if sparse:
-        ll, u = spl.eigs(SptDM, k=50, which='LR')
+        ll, u = np.linalg.eigh(SptDM)
         ll, u = sort_by_norm(ll, u)
     else:
         ll, u = np.linalg.eig(SptDM)
