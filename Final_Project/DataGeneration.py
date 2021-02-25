@@ -156,12 +156,13 @@ def nd_ap_gendata(file_name,load = False):
     # constants
     p = np.pi
     A = 0.25
-    epsilon = 0.25  # Alpha
+    Alpha = 0.25  # Alpha
     w = 2 * p
+    partition = 100
+    T = 201
+
     delta = 0.0001
     dt = 0.1
-    partition = 20
-    T = 201
 
     # time points
     t = np.linspace(0, 20, T)
@@ -173,12 +174,14 @@ def nd_ap_gendata(file_name,load = False):
 
     def model(z,t):
         x,y = z
+        dfx = (2 * Alpha * np.sin(w * t) * (x - 1) + 1)  # df/dx
+
         dxdt = -p * A * np.sin(p * f(x, t)) * np.cos(p * y)
-        dydt = p * A * np.cos(p * f(x,t)) * np.sin(p * y) * (np.sin(w * t)*(2*epsilon*x-2) + 1) #df/dx
+        dydt = p * A * np.cos(p * f(x,t)) * np.sin(p * y) * dfx
         return [dxdt, dydt]
 
     def f(x, t):
-        temp = epsilon * np.sin(w * t) * x**2 + (1 - 2 * epsilon * np.sin(w * t)) * x
+        temp = Alpha * np.sin(w * t) * x ** 2 + (1 - 2 * Alpha * np.sin(w * t)) * x
         return temp
 
     # y = 0.3
@@ -201,13 +204,13 @@ def BickleyJet_DG(path, load = False):
         BickleyJet = np.load('BickleyJet.npy')
     else:
         BickleyJet_x = np.expand_dims(genfromtxt(os.path.join(path, 'bickley_x.csv'), delimiter=',').T, 2)
-        BickleyJet_y = np.expand_dims(genfromtxt(os.path.join(path, 'bickley_x.csv'), delimiter=',').T, 2)
+        BickleyJet_y = np.expand_dims(genfromtxt(os.path.join(path, 'bickley_y.csv'), delimiter=',').T, 2)
 
         BickleyJet = np.concatenate((BickleyJet_x, BickleyJet_y), 2)
         np.save('BickleyJet', BickleyJet)
         print('Data Generation Done, Array saved')
 
-    return  BickleyJet
+    return BickleyJet
 
 if __name__ == '__main__':
     # nd_ap_gendata()
