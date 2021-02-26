@@ -29,14 +29,15 @@ if __name__ == '__main__':
     L_EigenVal = np.zeros([k,len(eps)])
     L_EigenVec = np.zeros([m,k,len(eps)])
 
-    Cluster_time = np.array([5,20,35])
-    EigFuncTime = np.array([0,T-1])
+    Cluster_time = np.array([0,T-1])
+    EigFuncTime = np.array([0])
     Lamda = 3
     DS_Name = 'DoubleGyro'
 
     for idx, i in enumerate(eps):
         print('Runing eps {}'.format(i))
-        data = SpaceTimeDiffMatrix.compute_SpaceTimeDMap(Diff_Space_time, r, i, k=k, sparse=True)
+        data = SpaceTimeDiffMatrix.compute_SpaceTimeDMap(Diff_Space_time, r, i, Cluster_time, Lamda,EigFuncTime, DS_Name,
+                                                         k=k, sparse=True)
         EigenVal[:, idx], EigenVec[:, :, idx], L_EigenVal[:, idx], L_EigenVec[:, :, idx] = data
     np.savez('data_DoubleGyreFlow.npz', EigenVal, EigenVec, L_EigenVal, L_EigenVec)
     common.multi_plot(L_EigenVal, k, 'DoubleGyreFlow')
