@@ -121,10 +121,10 @@ def compute_SpaceTimeDMap(X, r, epsilon, Cluster_time, Lamda, EigFuncTime, DS_Na
         ll_l, u_l = spl.eigs(L_SptDM, k=k, which='LR')
         ll_l, u_l = sort_by_norm(ll_l, u_l)
 
-    common.SptDM_SC(X,SptDM, Cluster_time, Lamda, DS_Name) #Original DS, The Space time diffusion matrix!!! not partial time
-    EigFuncIdx = [1,2,3]
-    common.SptDM_EigFunc(X, np.real(u), EigFuncIdx, EigFuncTime, DS_Name)
-    return np.real(ll), np.real(u), np.real(ll_l[::-1]),np.real(u_l[::-1]),
+    # common.SptDM_SC(X,SptDM, Cluster_time, Lamda, DS_Name) #Original DS, The Space time diffusion matrix!!! not partial time
+    # EigFuncIdx = [1,2,3]
+    # common.SptDM_EigFunc(X, np.real(u), EigFuncIdx, EigFuncTime, DS_Name)
+    return np.real(ll), np.real(u), np.real(ll_l[::-1]),np.real(u_l[::-1]), SptDM
 
 
 def sort_by_norm(evals, evecs):
