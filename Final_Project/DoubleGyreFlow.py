@@ -42,84 +42,83 @@ if __name__ == '__main__':
     Lamda = 3
     DS_Name = 'DoubleGyro'
 
-    # for idx, i in enumerate(eps):
-    #     print('Runing eps {}'.format(i))
-    #     data = SpaceTimeDiffMatrix.compute_SpaceTimeDMap(X, r, i, Cluster_time, Lamda,EigFuncTime, DS_Name,
-    #                                                      k=k, sparse=True)
-    #     EigenVal, EigenVec, L_EigenVal, L_EigenVec , Qeps = data
-    #     L_eps_EigenVal[:, idx] = L_EigenVal
-    #     np.savez(r'QepsMatices\Q_data_{}_epsilon_{}.npz'.format(DS_Name,i), EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps)
-    # common.multi_plot(L_EigenVal, k, 'DoubleGyreFlow')
+    for idx, i in enumerate(eps):
+        print('Runing eps {}'.format(i))
+        data = SpaceTimeDiffMatrix.compute_SpaceTimeDMap(X, r, i, Cluster_time, Lamda,EigFuncTime, DS_Name,
+                                                         k=k, sparse=True)
+        EigenVal, EigenVec, L_EigenVal, L_EigenVec , Qeps = data
+        L_eps_EigenVal[:, idx] = L_EigenVal
+        # np.savez(r'QepsMatices\Q_data_{}_epsilon_{}.npz'.format(DS_Name,i), EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps)
+    common.multi_plot(L_eps_EigenVal, k, eps, 'DoubleGyreFlow')
 
 
-    # ### --- Figures creation --- ###
-    # #Fig 5
-    # eps = 0.0002;
-    # EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
-    #
-    # Cluster_time = np.array([0]); Lamda = 3
-    # common.SptDM_SC(X,Qeps, Cluster_time, Lamda, DS_Name, eps) #Original DS, The Space time diffusion matrix!!! not partial time
-    #
-    # Cluster_time = np.array([196]); Lamda = 3
-    # common.SptDM_SC(X,Qeps, Cluster_time, Lamda, DS_Name, eps) #Original DS, The Space time diffusion matrix!!! not partial time
-    #
-    # #Fig 6
-    # eps = 0.0002;
-    # EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
-    #
-    # EigFuncIdx = [2]; EigFuncTime = np.array([0])
-    # common.SptDM_EigFunc(X, EigenVec, EigFuncIdx, EigFuncTime, DS_Name, eps)
-    #
-    # Cluster_time = np.array([0]); Lamda = 2
-    # common.SptDM_SC(X,Qeps, Cluster_time, Lamda, DS_Name, eps)
-    #
-    # ######
-    # eps = 0.004;
-    # EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
-    #
-    # EigFuncIdx = [2]; EigFuncTime = np.array([0])
-    # common.SptDM_EigFunc(X, EigenVec, EigFuncIdx, EigFuncTime, DS_Name, eps)
-    #
-    # Cluster_time = np.array([0]); Lamda = 2
-    # common.SptDM_SC(X,Qeps, Cluster_time, Lamda, DS_Name, eps)
-    #
-    # # Fig 7
-    # eps = 0.0005;
-    # ##### --- !!!!
-    # # In order to get the results, needs to change the number of components (eigenvectors)
-    # # which compose the Lamda clusters
-    # ##### --- !!!!
-    # EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
-    # Cluster_time = np.array([0]); Lamda = 4
+    ### --- Figures creation --- ###
+    #Fig 5
+    eps = 0.0002;
+    EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
+
+    Cluster_time = np.array([0]); Lamda = 3
+    common.SptDM_SC(X,Qeps, Cluster_time, Lamda, DS_Name, eps) #Original DS, The Space time diffusion matrix!!! not partial time
+
+    Cluster_time = np.array([196]); Lamda = 3
+    common.SptDM_SC(X,Qeps, Cluster_time, Lamda, DS_Name, eps) #Original DS, The Space time diffusion matrix!!! not partial time
+
+    #Fig 6
+    eps = 0.0002;
+    EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
+
+    EigFuncIdx = [0]; EigFuncTime = np.array([0])
+    common.SptDM_EigFunc(X, EigenVec, EigFuncIdx, EigFuncTime, DS_Name, eps)
+
+    Cluster_time = np.array([0]); Lamda = 2
+    common.SptDM_SC(X,Qeps, Cluster_time, Lamda, DS_Name, eps)
+
+    ######
+    eps = 0.004;
+    EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
+
+    EigFuncIdx = [1]; EigFuncTime = np.array([0])
+    common.SptDM_EigFunc(X, EigenVec, EigFuncIdx, EigFuncTime, DS_Name, eps)
+
+    Cluster_time = np.array([0]); Lamda = 2
+    common.SptDM_SC(X,Qeps, Cluster_time, Lamda, DS_Name, eps)
+
+    # Fig 7
+    eps = 0.0005;
+    ##### --- !!!!
+    # In order to get similar results like the paper, needs to change the number of components (eigenvectors)
+    # which compose the Lamda clusters
+    ##### --- !!!!
+    EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
+    Cluster_time = np.array([0]); Lamda = 4
     # common.SptDM_SC(X, Qeps, Cluster_time, Lamda, DS_Name, eps)
-    #
-    # eps = 0.004;
-    # EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
-    #
-    # Cluster_time = np.array([0]); Lamda = 4
-    # common.SptDM_SC(X, Qeps, Cluster_time, Lamda, DS_Name, eps)
+    # Add Kmeans option for clustering it's more efficient and fast
+    common.SptDM_Kmean_SC(X, EigenVec, Cluster_time, Lamda, DS_Name, eps)
+    eps = 0.004;
+    EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
+
+    Cluster_time = np.array([0]); Lamda = 4
+    common.SptDM_SC(X, Qeps, Cluster_time, Lamda, DS_Name, eps)
 
     print('Finish DoubleGyreFlow')
     print('Starting incomplete data case')
 
+    #Starting missing data section
     np.random.seed(32)
     eps = 0.01
-    # DS_Name = 'DoubleGyro_ReducedSamples'
+    DS_Name = 'DoubleGyro_ReducedSamples'
     m_reduced = 500
     idx = np.random.randint(0, m, m_reduced)
     X_rand = X[:,idx,:] #Reduce sample data
 
-    for i in np.arange(T):
-        idx_NaN = np.random.randint(0, m_reduced, [int(0.8 * m_reduced)])
-        X_rand[i,idx_NaN,:] = np.nan
-    print('Creating desampling data')
-
     data = SpaceTimeDiffMatrix.compute_SpaceTimeDMap(X_rand, r, eps, Cluster_time, Lamda,EigFuncTime, DS_Name,
-                                                     k=k, sparse=True)
-    EigenVal, EigenVec, L_EigenVal, L_EigenVec , Qeps = data
-    # np.savez(r'QepsMatices\Q_data_{}_epsilon_{}.npz'.format(DS_Name,i), EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps)
-    Cluster_time = np.array([0]); Lamda = 4
-    common.SptDM_SC(X_rand, Qeps, Cluster_time, Lamda, DS_Name, eps)
+                                                     k=k, sparse=True, Mdata=True)
+    MEigenVal, MEigenVec, ML_EigenVal, ML_EigenVec , MQeps = data
+    eps = 0.0002;
+    # eps = 0.004;
+    EigenVal, EigenVec, L_EigenVal, L_EigenVec, Qeps = common.QepsLoading(DS_Name, eps)
+    Cluster_time = np.array([0]); Lamda = 3
+    common.SptDM_Kmeans_SC_Mdata(X_rand, MEigenVec, X, EigenVec, Cluster_time, Lamda, DS_Name, eps)
 
 
 

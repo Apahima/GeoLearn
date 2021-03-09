@@ -54,7 +54,7 @@ if __name__ == '__main__':
     #     if SaveQeps: #If not specify, all Qeps will be saved, in order to save specific Qeps, needs to run only wanted epsilon
     #         np.savez(r'QepsMatices\Q_data_{}_epsilon_{}.npz'.format(DS_Name, i), EigenVal, EigenVec, L_EigenVal, L_EigenVec,
     #              Qeps)
-    # common.multi_plot(L_eps_EigenVal, k, 'BicklyJetDS')
+    # common.multi_plot(L_eps_EigenVal, k, eps, 'BicklyJetDS')
 
     ### --- Figures creation --- ###
     #Fig 10
@@ -64,8 +64,9 @@ if __name__ == '__main__':
     Cluster_time = np.array([5,20,35]); Lamda = 9
     cluster = common.SptDM_SC(X,Qeps, Cluster_time, Lamda, DS_Name, eps) #Original DS, The Space time diffusion matrix!!! not partial time
 
-    # EigFuncIdx = [1,2,3]; EigFuncTime = np.array([20])
-    # common.SptDM_EigFunc(X, EigenVec, EigFuncIdx, EigFuncTime, DS_Name, eps)
+    EigFuncIdx = [1,2,3]; EigFuncTime = np.array([20])
+    common.SptDM_EigFunc(X, EigenVec, EigFuncIdx, EigFuncTime, DS_Name, eps)
+
 
     #Fig 9 Right side
     embed_2 = Qeps @ EigenVec[:,1]

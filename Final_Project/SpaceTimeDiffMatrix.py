@@ -1,3 +1,4 @@
+#### Reference
 #### https://github.com/ClementiGroup/S3D/blob/master/S%5E3D-single_traj.ipynb
 
 from tqdm import tqdm
@@ -11,11 +12,17 @@ import sklearn.neighbors as neigh_search
 import sys
 from Final_Project import common
 
-def kernel_neighbor_search(A, r, epsilon, sparse=False):
+def kernel_neighbor_search(A, r, epsilon, sparse=False, Mdata = False):
     # calling nearest neighbor search class
     kernel = neigh_search.radius_neighbors_graph(A, np.sqrt(r*epsilon), mode='distance')
     # computing the diffusion kernel value at the non zero matrix entries
     kernel.data = np.exp(-(kernel.data ** 2) / (epsilon))
+
+    if Mdata: #Using for missing data section
+        np.random.seed(32)
+        idx_NaN = np.random.randint(0, 500, [int(0.8 * 500)])
+        kernel.toarray()[idx_NaN, :] = 0
+
 
     # diagonal needs to be added separately
     kernel = kernel + sps.identity(kernel.shape[0], format='csr')
@@ -30,26 +37,12 @@ def kernel_neighbor_search(A, r, epsilon, sparse=False):
 def matrix_B(kernel, sparse = False):
     #Equation #13
     if sparse:
-
-
         D = np.array(kernel.sum(axis=1)) #Diagonal matrix
         Q = sps.diags(1/np.squeeze(D))
         P_0 = Q @ kernel #P zero at time t matrix
         D_0 = np.squeeze(np.array(1 / P_0.sum(axis=0)))
         B = sps.diags(D_0) @ P_0.T @ P_0 #B Matrix at time t equation 13
 
-        #Udi
-        # q = np.squeeze(np.array(1/kernel.sum(axis=0)))
-        # Peps = sps.diags(q) @ kernel
-        # dpesi = np.squeeze(np.array(1/Peps.sum(axis=0)))
-        # B_0 = sps.diags(dpesi) @ Peps.T @ Peps
-
-
-        # m = kernel.shape[0]
-        # D = sps.csr_matrix.sum(kernel, axis=0)
-        # Q = sps.spdiags(1./D, 0, m, m)
-        # S = kernel * Q
-        # B = (S*(sps.csr_matrix.transpose(S)))/(sps.csr_matrix.sum(S, axis=1))
     else:
         D = np.sum(kernel, axis = 1)
         P_0 = kernel*(1./D)
@@ -58,8 +51,9 @@ def matrix_B(kernel, sparse = False):
     return B
 
 
-def compute_SpaceTimeDMap(X, r, epsilon, Cluster_time, Lamda, EigFuncTime, DS_Name, k=20,sparse=False):
+def compute_SpaceTimeDMap(X, r, epsilon, Cluster_time, Lamda, EigFuncTime, DS_Name, k=20,sparse=False, Mdata = False):
     """
+    Adding missing data flag
     computes the SpaceTime DIffusion Map matrix out of the dataset available
     Parameters
     -------------------
@@ -87,7 +81,7 @@ def compute_SpaceTimeDMap(X, r, epsilon, Cluster_time, Lamda, EigFuncTime, DS_Na
     for i_t in tqdm(range(T)):
         if (i_t % 10 == 0):
             print('time slice ' + str(i_t))
-        distance_kernel = kernel_neighbor_search(X[i_t, :, :], r, epsilon, sparse=sparse)
+        distance_kernel = kernel_neighbor_search(X[i_t, :, :], r, epsilon, sparse=sparse, Mdata = Mdata)
         # plt.imshow(distance_kernel.toarray())
         SptDM = SptDM + matrix_B(distance_kernel, sparse=sparse)
 
