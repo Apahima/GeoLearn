@@ -10,9 +10,18 @@ import time
 import scipy.sparse.linalg as spl
 import sklearn.neighbors as neigh_search
 import sys
-from Final_Project import common
+
 
 def kernel_neighbor_search(A, r, epsilon, sparse=False, Mdata = False):
+    """
+    Calculating the Affinity matrix both for full dataset or missing dataset Affinity matrix
+    :param A: Dataset - Full data or Missing Data
+    :param r: The neigbour radius
+    :param epsilon: the normalization parameter for the neaibours kernel calculation - control the diffusion rate in practice
+    :param sparse: Whether or not using sparse data
+    :param Mdata: Whether or not using Missing data flag
+    :return: Return the Affinity matrix for provided data
+    """
     # calling nearest neighbor search class
     kernel = neigh_search.radius_neighbors_graph(A, np.sqrt(r*epsilon), mode='distance')
     # computing the diffusion kernel value at the non zero matrix entries
@@ -35,6 +44,12 @@ def kernel_neighbor_search(A, r, epsilon, sparse=False, Mdata = False):
 
 
 def matrix_B(kernel, sparse = False):
+    """
+    Calculating the B matrix per paper
+    :param kernel: the Affinity matrix
+    :param sparse: Whether or not using sparse data
+    :return: Return the B matrix per paper
+    """
     #Equation #13
     if sparse:
         D = np.array(kernel.sum(axis=1)) #Diagonal matrix
@@ -51,27 +66,18 @@ def matrix_B(kernel, sparse = False):
     return B
 
 
-def compute_SpaceTimeDMap(X, r, epsilon, Cluster_time, Lamda, EigFuncTime, DS_Name, k=20,sparse=False, Mdata = False):
+def compute_SpaceTimeDMap(X, r, epsilon, k=20, sparse=False, Mdata = False):
     """
-    Adding missing data flag
-    computes the SpaceTime DIffusion Map matrix out of the dataset available
-    Parameters
-    -------------------
-    X: array T x m x 3
-      array of T time slices x 3m features (m=number of atoms, features are xyz-coordinates of the atoms)
-    r: scalar
-      cutoff radius for diffusion kernel
-    epsilon: scalar
-      scale parameter
+    Compute the space time diffusion matrix from X dataset
 
-    Returns
-    -------------------
-    ll: np.darray(m)
-      eigenvalues of the SpaceTime DMap
-    u: ndarray(m,m)
-      eigenvectors of the SpaceTime DMap. u[:,i] is the ith eigenvector corresponding to i-th eigenvalue
-    SptDM: ndarray(m,m)
-      SpaceTime Diffusion Matrix, eq (3.13) in the paper, time average of all the matrices in the cell list
+    :param X: The dataset which is T x m x 2 array contain the time channel and the trajectory
+    :param r: the radius for nearset-neighbour Affinity matrix
+    :param epsilon: the normalized parameter for the nearest-neighbour kernel
+    :param k: Number of eigenvector decomposition for spectral clustering
+    :param sparse: Whether or not using sparse data, the defualt is sparse=True
+    :param Mdata: Flag for calculating Missing data section
+    :return:
+    Return the eigenvalue and eigenfunction for the Q and the normalized laplacian matrix
     """
     m = np.shape(X)[1]
     T = np.shape(X)[0]
@@ -82,32 +88,11 @@ def compute_SpaceTimeDMap(X, r, epsilon, Cluster_time, Lamda, EigFuncTime, DS_Na
         if (i_t % 10 == 0):
             print('time slice ' + str(i_t))
         distance_kernel = kernel_neighbor_search(X[i_t, :, :], r, epsilon, sparse=sparse, Mdata = Mdata)
-        # plt.imshow(distance_kernel.toarray())
         SptDM = SptDM + matrix_B(distance_kernel, sparse=sparse)
-
-
-    # common.SptDM_SC(X,SptDM, Cluster_time, Lamda, DS_Name) #Original DS, The Space time diffusion matrix!!! not partial time
-    # np.save(r'{}\AffinityMatrix_{}_epsilon_{}_EigentFunction_{}'.format(DS_Name,DS_Name,epsilon,Cluster_time), AffinityQ_Time_ForCluster)
-
 
     SptDM = SptDM / T #Equation 19
 
     L_SptDM  = (1/epsilon) * (SptDM - np.identity(m)) #Computing L matrix
-
-    # np.save('eps_zero_two_speDM', SptDM)
-    # np.save('eps_zero_two_L_speDM', L_SptDM)
-    #
-    # SptDM = np.load('eps_zero_two_speDM.npy')
-    # L_SptDM = np.load('eps_zero_two_L_speDM.npy')
-
-    # ll, u = spl.eigs(SptDM, k=k, which='LR')
-    # ll_l, u_l = spl.eigs(L_SptDM, k=k, which='LR')
-    #
-
-    # plt.figure()
-    # plt.scatter(np.arange(1,k,1), ll_l[1:k+2])
-    # plt.figure()
-    # plt.scatter(np.arange(1,k,1), ll[1:k+2])
 
     if sparse:
         ll, u = spl.eigs(SptDM, k=k, which='LR')
@@ -115,14 +100,13 @@ def compute_SpaceTimeDMap(X, r, epsilon, Cluster_time, Lamda, EigFuncTime, DS_Na
         ll_l, u_l = spl.eigs(L_SptDM, k=k, which='LR')
         ll_l, u_l = sort_by_norm(ll_l, u_l)
 
-    # common.SptDM_SC(X,SptDM, Cluster_time, Lamda, DS_Name) #Original DS, The Space time diffusion matrix!!! not partial time
-    # EigFuncIdx = [1,2,3]
-    # common.SptDM_EigFunc(X, np.real(u), EigFuncIdx, EigFuncTime, DS_Name)
     return np.real(ll), np.real(u), np.real(ll_l[::-1]),np.real(u_l[::-1]), SptDM
 
 
 def sort_by_norm(evals, evecs):
     """
+    Reference
+    https://github.com/ClementiGroup/S3D/blob/master/S%5E3D-single_traj.ipynb
     Sorts the eigenvalues and eigenvectors by descending norm of the eigenvalues
     Parameters
     ----------
