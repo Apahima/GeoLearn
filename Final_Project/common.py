@@ -47,6 +47,9 @@ def multi_plot(X, k, eps,data='NotGetDataType'):
     plt.savefig(r'Figs\{}EigenValues'.format(data))
 
 def SptDM_SC(X, Affinity, Cluster_time, Lamda, DS_Name, eps):
+    """
+    NOT IN USED - CHAMGE TO OTHER METHOD LATER
+    """
     eps = str(eps).split('.')[1]
     fix, ax = plt.subplots(len(Cluster_time), 1, figsize=(19,10), squeeze=False)
     for idx, i in enumerate(Cluster_time):
